@@ -13,39 +13,56 @@
             <div class="title">
                 <h1>Fortify</h1>
             </div>
-    </div>
-    <div class="body-page">
-        <div class="form-container">
-            <form class="form-box">
-                <h2>Sign Up</h2>
-                <div class="input-group">
-                    <label for="name">Name</label>
-                    <input type="text" id="name" name="name" placeholder="Enter your name" required>
-                </div>
-    
-                <div class="input-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email" placeholder="Enter your email" required>
-                </div>
-    
-                <div class="input-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
-                </div>
-    
-                <div class="input-group">
-                    <label for="confirm-password">Confirm Password</label>
-                    <input type="password" id="confirm-password" name="confirm-password" placeholder="Confirm your password" required>
-                </div>
-    
-                <button type="submit" class="submit-btn">Sign Up</button>
-    
-                <p class="login-link">Already have an account? <a href="#">Login</a></p>
-            </form>
         </div>
-            <div>
+        <div class="body-page">
+            <div class="home-lhs">
+            <div class="form-container">
+                <!-- Sign Up Form -->
+                <form class="form-box signup-form" id="signupForm">
+                    <h2>Sign Up</h2>
+                    <div class="input-group">
+                        <label for="name">Name</label>
+                        <input type="text" id="name" name="name" placeholder="Enter your name" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" placeholder="Enter your email" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="confirm-password">Confirm Password</label>
+                        <input type="password" id="confirm-password" name="confirm-password" placeholder="Confirm your password" required>
+                    </div>
+                    <button type="submit" class="submit-btn">Sign Up</button>
+                    <p>Already have an account? <a href="#" id="showLogin" class="toggle-link">Login</a></p>
+                </form>
+                
+                <!-- Login Form -->
+                <form class="form-box login-form" id="loginForm" style="display: none;">
+                    <h2>Login</h2>
+                    <div class="input-group">
+                        <label for="login-email">Email</label>
+                        <input type="email" id="login-email" name="email" placeholder="Enter your email" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="login-password">Password</label>
+                        <input type="password" id="login-password" name="password" placeholder="Enter your password" required>
+                    </div>
+                    <button type="submit" class="submit-btn">Login</button>
+                    <p >Don’t have an account? <a href="#" id="showSignup" class="toggle-link">Sign Up</a></p>
+                </form>
+            </div>
+        </div>
+        <div class="home-rhs">
+            <div class="info-container">
                 <img src="./homepage-image.png" alt="Our strength is our story">
             </div>
         </div>
+        </div>
+    </div>
+    <script src="./script.js"></script>
 </body>
 </html>
