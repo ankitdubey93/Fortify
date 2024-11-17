@@ -7,7 +7,7 @@ const User = require("./models/signup")
 require('dotenv').config();
 
 const PORT = 3000;
-
+const dashboard_path = path.join(__dirname,"../public/dashboard.html")
 
 
 const static_path = path.join(__dirname, "../public")
@@ -18,6 +18,10 @@ app.use(express.urlencoded({extended:true}))
 
 app.get('/',(req,res) => {
     res.redirect("/");
+})
+
+app.get('/dashboard',(req,res) => {
+    res.sendfile(dashboard_path);
 })
 
 app.post("/signup",async (req,res) => {

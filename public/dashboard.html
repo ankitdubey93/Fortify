@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+    <link rel="stylesheet" href="./css/dashboard.css">
+</head>
+
+<body>
+<div class="navbar">
+    <div class="title">
+  <h1>Welcome to your Fortify Dashboard!</h1>
+</div>
+<div class="logout">
+    <p>Logout</p>
+</div>
+</div>
+<div class="main-page">
+<div class="user-info-container">
+    <p>User:</p>
+    <p>User ID:</p>
+</div>
+
+<div class="form-container">
+  <form id="myForm">
+    <div class="form-field">
+    <label for="website">Website/URL:</label>
+    <input type="text" id="website" name="website" required>
+    </div>
+    <div class="form-field">
+    <label for="username">Username:</label>
+    <input type="text" id="username" name="username" required>
+    </div>
+    <div class="form-field">
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password" required>
+    </div>
+    <div class="form-buttons">
+      <button id="submitButton" class="submit-btn" onclick="saveNewPassword()" type="button">Submit</button>
+      <button id="editButton"class="submit-btn" type="button">Update</button>
+    </div>
+  </form>
+</div>
+
+  <div class="display-container">
+    <label for="search">Search</label>
+    <input type="text" id="searchText" name="find">
+    <table id="formDataTable" class="display-table">
+      <thead>
+        <tr>
+          <th>Website/Account</th>
+          <th>Username</th>
+          <th>Password/Pin</th>
+
+        </tr>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+</div>
+  <script src="mpm1.js"></script>
+</body>
+
+</html>
