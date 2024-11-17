@@ -21,7 +21,7 @@ app.get('/',(req,res) => {
 })
 
 app.get('/dashboard',(req,res) => {
-    res.sendfile(dashboard_path);
+    res.sendFile(dashboard_path);
 })
 
 app.post("/signup",async (req,res) => {
