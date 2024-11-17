@@ -4,6 +4,7 @@ const path = require('path')
 const app = express();
 require('./db/connect')
 const User = require("./models/signup")
+
 require('dotenv').config();
 
 const PORT = 3000;

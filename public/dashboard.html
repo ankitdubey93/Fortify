@@ -18,7 +18,7 @@
 <div class="main-page">
 <div class="user-info-container">
     <p>User:</p>
-    <p>User ID:</p>
+    <p>UserID:</p>
 </div>
 <div class="form-container">
   <form id="myForm">
@@ -34,6 +34,10 @@
     <label for="password">Password:</label>
     <input type="password" id="password" name="password" required>
     </div>
+    <div class="form-field">
+      <label for="notes">Note:</label>
+      <input type="text" id="notes" name="notes">
+      </div>
     <div class="form-buttons">
       <button id="submitButton" class="submit-btn" onclick="saveNewPassword()" type="button">Submit</button>
       <button id="editButton"class="submit-btn" type="button">Update</button>
@@ -51,6 +55,7 @@
           <th>Website/URL/Account</th>
           <th>Username</th>
           <th>Password/Pin</th>
+          <th>Notes</th>
         </tr>
         </tr>
       </thead>
