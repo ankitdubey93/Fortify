@@ -4,11 +4,14 @@ const path = require('path')
 const app = express();
 require('./db/connect')
 const User = require("./models/signup")
+const jwt = require('jsonwebtoken')
+
 
 require('dotenv').config();
 
 const PORT = 3000;
 const dashboard_path = path.join(__dirname,"../public/dashboard.html")
+const homepage_path = path.join(__dirname,"../public/index.html")
 
 
 const static_path = path.join(__dirname, "../public")
@@ -18,11 +21,20 @@ app.use(express.json());
 app.use(express.urlencoded({extended:true}))
 
 app.get('/',(req,res) => {
-    res.redirect("/");
+    res.sendFile(homepage_path);
 })
 
-app.get('/dashboard',(req,res) => {
+app.get('/dashboard',async (req,res) => {
+    try {
+        const userId = req.query.user;
+        const user = await User.findById(userId);
+    if(!user) {
+        return res.status(400).send("User not found");
+    }
     res.sendFile(dashboard_path);
+        
+    } catch (error)
+    {res.status(500).send(error.message)}
 })
 
 app.post("/signup",async (req,res) => {
@@ -41,11 +53,11 @@ app.post("/signup",async (req,res) => {
                 name: req.body.name,
                 email: req.body.email,
                 password: password,
-                confirmpassword: cpassword,
             }
-        )
+        );
         const registered = await signUpUser.save();
-        res.redirect('/')
+        
+        res.redirect('/');
        }
        else {
         res.send("Passwords do not match")
@@ -56,6 +68,39 @@ app.post("/signup",async (req,res) => {
     }
 })
 
+app.post('/login',async (req,res) => {
+    try {
+        const {email,password} = req.body;
+
+        const user = await User.findOne({email});
+        if(!user) {
+            return res.status(400).send("User not found. Please sign up first.")
+        }
+
+        const isPasswordValid = password === user.password;
+        if(!isPasswordValid) {
+            return res.status(400).send("Invalid email or password.")
+        }
+        res.redirect(`/dashboard?user=${user._id}`);
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+})
+
+app.get("/api/user/:id", async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user) {
+            return res.status(404).send("User not found.");
+        }
+        res.json({
+            name: user.name,
+            id: user._id,
+        });
+    } catch (error) {   
+        res.status(500).send(error.message);
+    }
+});
 
 
 app.listen(PORT,() => {
