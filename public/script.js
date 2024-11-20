@@ -1,8 +1,28 @@
-document.getElementById("loginForm").addEventListener("submit", (event) => {
-    event.preventDefault;
+document.getElementById("loginForm").addEventListener("submit",async (event) => {
+    event.preventDefault();
 
     const email = document.getElementById("login-email").value;
     const password = document.getElementById("login-password").value;
+
+    const response = await fetch('/login',{
+        body: JSON.stringify({email,password}),
+        method: 'POST',
+        headers: {
+            "Content-Type": "application/json"
+        }
+    })
+
+    if (response.ok) {
+        const user = await response.json();
+
+        localStorage.setItem('userEmail', email);
+        localStorage.setItem('userPassword',password);
+        
+
+        window.location.href =  `/dashboard?user=${user.id}`;
+    }
+
+
 })
 
 
