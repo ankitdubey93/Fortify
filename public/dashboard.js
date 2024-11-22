@@ -6,6 +6,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     try {
         const email = localStorage.getItem("userEmail");
         const password = localStorage.getItem("userPassword");
+
+        if (!email || !password) {
+            // If no email or password, redirect to login page
+            window.location.href = '/';
+            return;
+        }
     
         const verifyResponse = await fetch('/verify',{
                 method: 'POST',
@@ -36,3 +42,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         alert("An error occurred. Please try again.");
     }
 });
+
+
+document.getElementById('logout-btn').addEventListener("click",() => {
+
+    localStorage.clear();
+    window.location.href = '/';
+})
