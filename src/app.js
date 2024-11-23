@@ -145,7 +145,7 @@ app.post('/api/entry', async (req, res) => {
 
         await user.save();
 
-        res.status(201).json({ message: "Entry added successfully!", data: user.data });
+        res.status(201).send({ message: "Entry added successfully!"});
     } catch (error) {
         res.status(500).send("Failed to add entry.");
     }
