@@ -130,6 +130,27 @@ app.get("/api/user/:id", async (req, res) => {
     }
 });
 
+
+app.post('/api/entry', async (req, res) => {
+    try {
+        const { userId, website, username, password, notes } = req.body;
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).send("User not found.");
+        }
+
+        const newEntry = { website, username, password, notes };
+        user.data.push(newEntry); // Add the new entry to the `data` array
+
+        await user.save();
+
+        res.status(201).json({ message: "Entry added successfully!", data: user.data });
+    } catch (error) {
+        res.status(500).send("Failed to add entry.");
+    }
+});
+
 app.listen(PORT,() => {
     console.log(`Server is running on port ${PORT}`)
 } )

@@ -67,3 +67,31 @@ window.addEventListener("pageshow", (event) => {
         window.location.reload();
     }
 });
+
+
+document.getElementById("submitButton").addEventListener("click", async () => {
+    const params = new URLSearchParams(window.location.search);
+    const userId = params.get('user');
+    const formData = new FormData(document.getElementById("myForm"));
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+        const response = await fetch("/api/entry", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ userId, ...data }),
+        });
+
+        if (!response.ok) {
+            throw new Error(await response.text());
+        }
+
+        alert("Entry saved successfully!");
+       
+    } catch (error) {
+        console.error("Failed to save entry:", error);
+        alert("Failed to save entry. Please try again.");
+    }
+});
