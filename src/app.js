@@ -124,6 +124,7 @@ app.get("/api/user/:id", async (req, res) => {
         res.json({
             name: user.name,
             id: user._id,
+            data: user.data,
         });
     } catch (error) {   
         res.status(500).send(error.message);
@@ -150,6 +151,9 @@ app.post('/api/entry', async (req, res) => {
         res.status(500).send("Failed to add entry.");
     }
 });
+
+
+
 
 app.listen(PORT,() => {
     console.log(`Server is running on port ${PORT}`)

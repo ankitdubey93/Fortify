@@ -25,12 +25,38 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
         const response = await fetch(`/api/user/${userId}`);
         const user = await response.json();
+        console.log(user);
 
         if (response.ok) {
             document.querySelector(".user-info-container").innerHTML = `
                 <p>User: ${user.name}</p>
                 <p>UserID: ${userId}</p>
             `;
+
+            let tbody = document.getElementById('formDataTable').getElementsByTagName('tbody')[0];
+
+            tbody.innerHTML = '';
+            const data = user.data;
+            console.log(data);
+            const finalDataArray = data.sort((a, b) => {
+              if (a.account < b.account) { return -1; }
+              else if (a.account > b.account) { return 1; }
+              else return 0;
+            });
+            finalDataArray.forEach(function (data) {
+              let row = tbody.insertRow();
+              let c1 = row.insertCell(0);
+              let c2 = row.insertCell(1);
+              let c3 = row.insertCell(2);
+              let c4 = row.insertCell(3);
+              let c5 = row.insertCell(4);
+          
+          
+              c1.textContent = data.website;
+              c2.textContent = data.username;
+              c3.textContent = data.password;
+              c4.textContent = data.notes;
+            });             
         } else {
             throw new Error(user);
         }
@@ -43,6 +69,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         alert("An error occurred. Please try again.");
     }
 });
+
+
 
 
 document.getElementById('logout-btn').addEventListener("click",() => {
@@ -95,3 +123,4 @@ document.getElementById("submitButton").addEventListener("click", async () => {
         alert("Failed to save entry. Please try again.");
     }
 });
+
