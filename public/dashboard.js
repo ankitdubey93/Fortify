@@ -1,4 +1,33 @@
 
+const displayTable = (userData) => {
+let tbody = document.getElementById('formDataTable').getElementsByTagName('tbody')[0];
+
+tbody.innerHTML = '';
+const data = userData.data;
+console.log(data);
+const finalDataArray = data.sort((a, b) => {
+  if (a.account < b.account) { return -1; }
+  else if (a.account > b.account) { return 1; }
+  else return 0;
+});
+finalDataArray.forEach(function (data) {
+  let row = tbody.insertRow();
+  let c1 = row.insertCell(0);
+  let c2 = row.insertCell(1);
+  let c3 = row.insertCell(2);
+  let c4 = row.insertCell(3);
+  let c5 = row.insertCell(4);
+
+
+  c1.textContent = data.website;
+  c2.textContent = data.username;
+  c3.textContent = data.password;
+  c4.textContent = data.notes;
+});             
+
+};
+
+
 document.addEventListener("DOMContentLoaded", async () => {
     const params = new URLSearchParams(window.location.search);
     const userId = params.get('user');
@@ -32,31 +61,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                 <p>User: ${user.name}</p>
                 <p>UserID: ${userId}</p>
             `;
-
-            let tbody = document.getElementById('formDataTable').getElementsByTagName('tbody')[0];
-
-            tbody.innerHTML = '';
-            const data = user.data;
-            console.log(data);
-            const finalDataArray = data.sort((a, b) => {
-              if (a.account < b.account) { return -1; }
-              else if (a.account > b.account) { return 1; }
-              else return 0;
-            });
-            finalDataArray.forEach(function (data) {
-              let row = tbody.insertRow();
-              let c1 = row.insertCell(0);
-              let c2 = row.insertCell(1);
-              let c3 = row.insertCell(2);
-              let c4 = row.insertCell(3);
-              let c5 = row.insertCell(4);
-          
-          
-              c1.textContent = data.website;
-              c2.textContent = data.username;
-              c3.textContent = data.password;
-              c4.textContent = data.notes;
-            });             
+            displayTable(user);
+           
         } else {
             throw new Error(user);
         }
@@ -97,6 +103,7 @@ window.addEventListener("pageshow", (event) => {
 });
 
 
+
 document.getElementById("submitButton").addEventListener("click", async () => {
     const params = new URLSearchParams(window.location.search);
     const userId = params.get('user');
@@ -117,6 +124,9 @@ document.getElementById("submitButton").addEventListener("click", async () => {
         }
 
         alert("Entry saved successfully!");
+
+        window.location.reload('/')
+        
        
     } catch (error) {
         console.error("Failed to save entry:", error);
