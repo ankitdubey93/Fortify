@@ -25,7 +25,7 @@ app.get('/',(req,res) => {
 
 app.get('/dashboard',async (req,res) => {
     try {
-        res.setHeader('Cache-Control', 'no-store');
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
 
 
         const userId = req.query.user;

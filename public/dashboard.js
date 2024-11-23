@@ -37,6 +37,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     } catch (error) {
         if(error.message == 'Unauthorized') {
             window.location.href = '/';
+            
         }
         console.error("Failed to fetch user details:", error);
         alert("An error occurred. Please try again.");
@@ -49,3 +50,20 @@ document.getElementById('logout-btn').addEventListener("click",() => {
     localStorage.clear();
     window.location.href = '/';
 })
+
+
+window.addEventListener("popstate", () => {
+    localStorage.getItem("userEmail");
+    localStorage.getItem("userPassword");
+
+    if(!email || !assword) {
+        window.location.href = '/';
+    }
+});
+
+
+window.addEventListener("pageshow", (event) => {
+    if (event.persisted) {
+        window.location.reload();
+    }
+});
