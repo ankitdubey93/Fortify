@@ -1,4 +1,8 @@
 
+let editData = null;
+
+
+
 const displayTable = (userData) => {
 let tbody = document.getElementById('formDataTable').getElementsByTagName('tbody')[0];
 
@@ -17,12 +21,14 @@ finalDataArray.forEach(function (data) {
   let c3 = row.insertCell(2);
   let c4 = row.insertCell(3);
   let c5 = row.insertCell(4);
+  let c6 = row.insertCell(5);
 
 
   c1.textContent = data.website;
   c2.textContent = data.username;
   c3.textContent = data.password;
   c4.textContent = data.notes;
+   
 
 
   let editButton = document.createElement('button');
@@ -37,11 +43,38 @@ finalDataArray.forEach(function (data) {
       handleDeleteButton(data);
 
     });
-    c4.appendChild(editButton);
-    c5.appendChild(deleteButton);
+    c5.appendChild(editButton);
+    c6.appendChild(deleteButton);
 });             
 
 };
+
+
+const handleDeleteButton =async (data)=> {
+ const confirmation = window.confirm("Are you sure you want to delete the entry for account: " + data.website + " with the username: " + data.username + "?");  
+ if(confirmation == false)
+        return;
+
+ try {
+    const userId = new URLSearchParams(window.location.search).get('user');
+    const response = await fetch(`/api/entry/${userId}/${data._id}`, {
+        method: "DELETE",
+        header: {
+            "Content-Type": "application/json"
+        },
+        
+    });
+    if(!response.ok) {
+        throw new Error("Failed to delete entry.")
+    }
+    alert("Entry deleted successfully.")
+    window.location.reload();
+ }  catch (error) {
+    console.error("Failed to delete entry", error);
+    alert("An error occurred while deleting the entry. Please try again.")
+ }
+}
+ 
 
 
 document.addEventListener("DOMContentLoaded", async () => {
