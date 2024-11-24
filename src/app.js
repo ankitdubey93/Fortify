@@ -152,6 +152,31 @@ app.post('/api/entry', async (req, res) => {
     }
 });
 
+app.put('api/entry/:userId/:entryId', async (req, res) => {
+    try{
+        const {userId, entryId} = req.params;
+        const { website, username, password, notes } = req.body;
+        console.log(userId,entryId);
+        const user = await User.findById(userId);
+       
+        if(!user) {
+            return res.status(404).send("User not found.")
+        }
+        const entryIndex = user.data.findIndex((entry) => entry._id.toString() === entryId);
+        if(entryIndex === -1) {
+            return res.status(404).send("Entry not found.")
+        }
+        user.data[entryIndex] = {...user.data[entryIndex],website,username,password,notes};
+
+        await user.save();
+
+        res.status(200).send({message: "Entry updated successfully."})
+    }catch (error) {
+        console.log(error);
+        res.status(500).send("Failed to udpate entry.")
+    }
+})
+
 app.delete('/api/entry/:userId/:entryId', async (req, res) => {
     try {
         const { userId, entryId } = req.params;

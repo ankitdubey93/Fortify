@@ -33,14 +33,14 @@ finalDataArray.forEach(function (data) {
   let editButton = document.createElement('button');
     editButton.textContent = 'Edit';
     editButton.classList.add('edit-button');
-    editButton.addEventListener('click', function () {
+    editButton.addEventListener('click',() => {
       handleEditButton(data);
     });
     
     let deleteButton = document.createElement('button');
     deleteButton.textContent = 'Delete';
     deleteButton.classList.add('delete-button');
-    deleteButton.addEventListener('click', function () {
+    deleteButton.addEventListener('click',() => {
       handleDeleteButton(data);
 
     });
@@ -76,7 +76,52 @@ const handleDeleteButton =async (data)=> {
  }
 }
  
+const handleEditButton = (data) => {
+    editData = data;
+    document.getElementById('website').value = data.website;
+    document.getElementById('username').value = data.username;
+    document.getElementById('password').value = data.password;
+    document.getElementById('notes').value = data.notes;
+}
 
+const handleUpdateButton = async () => {
+    const params = new URLSearchParams(window.location.search);
+    const userId = params.get('user');
+
+    // Get updated data from the form
+    const website = document.getElementById('website').value;
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const notes = document.getElementById('notes').value;
+
+    const updatedData = { website, username, password, notes };
+
+    try {
+        const response = await fetch(`/api/entry/${userId}/${editData._id}`, {
+            method: "PUT", // Use PUT for updating
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(updatedData) // Send the updated data
+        });
+
+        const responseBody = await response.text(); // Get response message
+        console.log("Response from server:", responseBody);
+
+        if (!response.ok) {
+            throw new Error(responseBody); // Throw error if the response is not OK
+        }
+
+        alert("Entry updated successfully.");
+        window.location.reload(); // Reload to see updated entry
+    } catch (error) {
+        console.error("Failed to update entry", error);
+        alert("An error occurred while updating the entry. Please try again.");
+    }
+};
+
+
+document.getElementById("editButton").addEventListener("click",handleUpdateButton);
 
 document.addEventListener("DOMContentLoaded", async () => {
     const params = new URLSearchParams(window.location.search);
