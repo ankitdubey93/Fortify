@@ -28,17 +28,18 @@ finalDataArray.forEach(function (data) {
   c2.textContent = data.username;
   c3.textContent = data.password;
   c4.textContent = data.notes;
-   
 
 
   let editButton = document.createElement('button');
     editButton.textContent = 'Edit';
+    editButton.classList.add('edit-button');
     editButton.addEventListener('click', function () {
       handleEditButton(data);
     });
     
     let deleteButton = document.createElement('button');
     deleteButton.textContent = 'Delete';
+    deleteButton.classList.add('delete-button');
     deleteButton.addEventListener('click', function () {
       handleDeleteButton(data);
 
