@@ -105,11 +105,10 @@ const handleUpdateButton = async () => {
             body: JSON.stringify(updatedData) // Send the updated data
         });
 
-        const responseBody = await response.text(); // Get response message
-        console.log("Response from server:", responseBody);
+        
 
         if (!response.ok) {
-            throw new Error(responseBody); // Throw error if the response is not OK
+            throw new Error("Could not update!"); // Throw error if the response is not OK
         }
 
         alert("Entry updated successfully.");
@@ -121,7 +120,7 @@ const handleUpdateButton = async () => {
 };
 
 
-document.getElementById("editButton").addEventListener("click",handleUpdateButton);
+
 
 document.addEventListener("DOMContentLoaded", async () => {
     const params = new URLSearchParams(window.location.search);
@@ -157,6 +156,22 @@ document.addEventListener("DOMContentLoaded", async () => {
                 <p>UserID: ${userId}</p>
             `;
             displayTable(user);
+
+            const searchInput = document.getElementById("searchText");
+            searchInput.addEventListener("input", (event) => {
+                const searchTerm = event.target.value.toLowerCase();
+                const rows = document.querySelectorAll('#formDataTable tbody tr');
+
+                rows.forEach((row) => {
+                    const rowText = row.textContent.toLowerCase();
+                    if(rowText.includes(searchTerm)) {
+                        row.style.display = '';
+                    } 
+                    else {
+                        row.style.display = 'none';
+                    }
+                })
+            })
            
         } else {
             throw new Error(user);
@@ -170,6 +185,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         alert("An error occurred. Please try again.");
     }
 });
+
+
 
 
 
@@ -229,3 +246,6 @@ document.getElementById("submitButton").addEventListener("click", async () => {
     }
 });
 
+
+
+document.getElementById("editButton").addEventListener("click", handleUpdateButton);

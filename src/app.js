@@ -152,7 +152,7 @@ app.post('/api/entry', async (req, res) => {
     }
 });
 
-app.put('api/entry/:userId/:entryId', async (req, res) => {
+app.put('/api/entry/:userId/:entryId', async (req, res) => {
     try{
         const {userId, entryId} = req.params;
         const { website, username, password, notes } = req.body;
