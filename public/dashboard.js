@@ -105,8 +105,7 @@ const handleUpdateButton = async () => {
             body: JSON.stringify(updatedData) // Send the updated data
         });
 
-        
-
+    
         if (!response.ok) {
             throw new Error("Could not update!"); // Throw error if the response is not OK
         }
@@ -118,9 +117,6 @@ const handleUpdateButton = async () => {
         alert("An error occurred while updating the entry. Please try again.");
     }
 };
-
-
-
 
 document.addEventListener("DOMContentLoaded", async () => {
     const params = new URLSearchParams(window.location.search);
