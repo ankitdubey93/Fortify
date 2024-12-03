@@ -2,9 +2,10 @@ const express = require('express');
 const { stat } = require('fs');
 const path = require('path')
 const app = express();
+const bcrypt = require('bcrypt');
 require('./db/connect')
 const User = require("./models/signup");
-const { error } = require('console');
+
 require('dotenv').config();
 
 
@@ -45,25 +46,32 @@ app.post("/signup",async (req,res) => {
        const password = req.body.password;
        const cpassword = req.body['confirm-password'];
 
+       if(password !== cpassword) {
+        return res.status(400).send("Passwords do not match.")
+       }
+
        const existingUser = await User.findOne({ email: req.body.email });
        if (existingUser) {
            return res.status(400).send("Email already registered. Please use a different email.");
        }
-       if(password === cpassword) {
+
+
+        const saltRounds = 10 ;
+        const hashedPassword = await bcrypt.hash(password,saltRounds);
+        console.log(hashedPassword);
+
         const signUpUser = new User(
             {
                 name: req.body.name,
                 email: req.body.email,
-                password: password,
+                password: hashedPassword,
             }
         );
         const registered = await signUpUser.save();
         res.redirect('/');
        }
-       else {
-        res.send("Passwords do not match")
-       }
-    }
+    
+    
     catch (error) {
         res.status(400).send(error);
     }
@@ -78,7 +86,7 @@ app.post("/signup",async (req,res) => {
         if(!user) {
              throw new Error('User not found.');
         }
-        const isPasswordValid = password === user.password;
+        const isPasswordValid = await bcrypt.compare(password,user.password);
         if(!isPasswordValid) {
             throw new Error("Invalid email or password.")
         }
@@ -105,7 +113,7 @@ app.post('/login',async (req,res) => {
         if(!user) {
             return res.status(400).send("User not found. Please sign up first.")
         }
-        const isPasswordValid = password === user.password;
+        const isPasswordValid = await bcrypt.compare(password,user.password);
         if(!isPasswordValid) {
             return res.status(400).send("Invalid email or password.")
         }
@@ -136,12 +144,14 @@ app.post('/api/entry', async (req, res) => {
     try {
         const { userId, website, username, password, notes } = req.body;
 
+      
+
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).send("User not found.");
         }
 
-        const newEntry = { website, username, password, notes };
+        const newEntry = { website, username, password,  notes };
         user.data.push(newEntry); // Add the new entry to the `data` array
 
         await user.save();
