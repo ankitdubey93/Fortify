@@ -8,20 +8,23 @@ import { generateToken } from "../utils/jwt";
 
 const router = Router();
 
-router.post("/signup", async (req: Request, res: Response): Promise<any> => {
+router.post("/signup", async (req: Request, res: Response) => {
   const { name, username, password } = req.body;
 
   if (!name || !username || !password) {
-    return res.status(400).json({ message: "All fields are required." });
+    res.status(400).json({ message: "All fields are required." });
+    return;
   }
 
   try {
     const existingUser = await User.findOne({ username });
 
     if (existingUser) {
-      return res
+      res
         .status(409)
         .json({ existingUser, message: "Username already exists." });
+
+      return;
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -36,7 +39,7 @@ router.post("/signup", async (req: Request, res: Response): Promise<any> => {
 
     const token = generateToken(savedUser._id.toString());
 
-    return res.status(201).json({
+    res.status(201).json({
       user: {
         _id: savedUser._id,
         name: savedUser.name,
@@ -46,6 +49,7 @@ router.post("/signup", async (req: Request, res: Response): Promise<any> => {
 
       message: "User created succesfully.",
     });
+    return;
   } catch (error) {
     console.error("Error during signup:", error);
     res.status(500).json({ message: "Failed to create user", error });
