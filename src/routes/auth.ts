@@ -56,4 +56,37 @@ router.post("/signup", async (req: Request, res: Response) => {
   }
 });
 
+router.post("/signin", async (req: Request, res: Response) => {
+  try {
+    const { username, password } = req.body;
+
+    const validUser = await User.findOne({ username });
+
+    if (!validUser) {
+      res.status(404).json({ message: "User not found. Invalid username." });
+      return;
+    }
+
+    const isMatch = await bcrypt.compare(password, validUser.password);
+
+    if (!isMatch) {
+      res.status(401).json({ message: "Invalid password." });
+      return;
+    }
+
+    const token = generateToken(validUser._id.toString());
+
+    res.status(200).json({
+      user: {
+        _id: validUser._id,
+        name: validUser.name,
+        username: validUser.username,
+        token,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: "fdgd" });
+  }
+});
+
 export default router;
