@@ -1,4 +1,3 @@
-import { kStringMaxLength } from "buffer";
 import mongoose, { Document, Schema } from "mongoose";
 
 export interface Entry {
@@ -9,8 +8,9 @@ export interface Entry {
 }
 
 export interface User extends Document {
+  _id: mongoose.Types.ObjectId;
   name: string;
-  email: string;
+  username: string;
   password: string;
   data: Entry[];
 }
@@ -27,7 +27,9 @@ const entrySchema = new Schema<Entry>(
 
 const userSchema = new Schema<User>({
   name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
+  username: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   data: [entrySchema],
 });
+
+export const User = mongoose.model<User>("User", userSchema);
