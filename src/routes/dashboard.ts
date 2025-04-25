@@ -12,7 +12,9 @@ dashboardRouter.get("/", async (req: AuthRequest, res: express.Response) => {
   }
 
   try {
-    const loggedInUser = await User.findOne({ _id: req.user.userId });
+    const loggedInUser = await User.findById(req.user.userId).select(
+      "name data"
+    );
 
     if (!loggedInUser) {
       res
@@ -21,7 +23,10 @@ dashboardRouter.get("/", async (req: AuthRequest, res: express.Response) => {
       return;
     }
 
-    res.status(200).json({ message: `Welcome ${loggedInUser.name}` });
+    res.status(200).json({
+      message: `Welcome ${loggedInUser.name}`,
+      entries: loggedInUser.data,
+    });
   } catch (error) {
     res.status(500).json({ message: "Internal server error." });
   }
