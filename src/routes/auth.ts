@@ -4,7 +4,11 @@ import bcrypt from "bcrypt";
 
 import { User } from "../models/User";
 
-import { generateToken } from "../utils/jwt";
+import { RefreshToken } from "../models/RefreshToken";
+
+import { generateAccessToken, generateRefreshToken } from "../utils/jwt";
+
+import jwt from "jsonwebtoken";
 
 const router = Router();
 
@@ -37,15 +41,22 @@ router.post("/signup", async (req: Request, res: Response) => {
 
     const savedUser = (await newUser.save()) as User;
 
-    const token = generateToken(savedUser._id.toString());
+    const accessToken = generateAccessToken(savedUser._id.toString());
+    const refreshToken = generateRefreshToken(savedUser._id.toString());
+
+    await new RefreshToken({
+      userId: savedUser._id,
+      token: refreshToken,
+    }).save();
 
     res.status(201).json({
       user: {
         _id: savedUser._id,
         name: savedUser.name,
         username: savedUser.username,
-        token: token,
       },
+      accessToken,
+      refreshToken,
 
       message: "User created succesfully.",
     });
@@ -74,18 +85,75 @@ router.post("/signin", async (req: Request, res: Response) => {
       return;
     }
 
-    const token = generateToken(validUser._id.toString());
+    const accessToken = generateAccessToken(validUser._id.toString());
+    const refreshToken = generateRefreshToken(validUser._id.toString());
+
+    await new RefreshToken({
+      userId: validUser._id,
+      token: refreshToken,
+    }).save();
 
     res.status(200).json({
       user: {
         _id: validUser._id,
         name: validUser.name,
         username: validUser.username,
-        token,
       },
+      accessToken,
+      refreshToken,
     });
   } catch (error) {
     res.status(500).json({ message: "fdgd" });
+  }
+});
+
+router.post("/signout", async (req: Request, res: Response) => {
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+    res.status(400).json({ message: "Refresh token required." });
+    return;
+  }
+
+  try {
+    await RefreshToken.deleteOne({ token: refreshToken });
+
+    res.status(200).json({ message: "Signed out successfully." });
+  } catch (error) {
+    console.error("Signout error", error);
+    res.status(500).json({ message: "Internal server error." });
+    return;
+  }
+});
+
+router.post("/refresh", async (req: Request, res: Response) => {
+  const { refreshToken } = req.body;
+
+  if (!RefreshToken) {
+    res.status(400).json({ message: "Refresh token is required." });
+    return;
+  }
+
+  try {
+    const storedToken = await RefreshToken.findOne({ token: refreshToken });
+
+    if (!storedToken) {
+      res.status(403).json({ message: "Invalid refresh token." });
+      return;
+    }
+
+    const payload = jwt.verify(
+      refreshToken,
+      process.env.REFRESH_TOKEN_SECRET as string
+    ) as { userId: string };
+
+    const newAccessToken = generateAccessToken(payload.userId);
+
+    res.status(200).json({ accessToken: newAccessToken });
+  } catch (error) {
+    console.error("Refresh error:", error);
+    res.status(403).json({ message: "Invalid or expired refresh token." });
+    return;
   }
 });
 

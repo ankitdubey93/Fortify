@@ -9,7 +9,7 @@ dashboardRouter.get("/", (req: AuthRequest, res: express.Response) => {
   if (!req.user) {
     throw new Error("Not authorized.");
   } else {
-    res.status(200).json({ message: "User signed in. welcom" });
+    res.status(200).json({ message: `Welcome user ${req.user.userId}` });
   }
 });
 

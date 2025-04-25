@@ -6,22 +6,22 @@ export interface AuthRequest extends Request {
   user?: JwtPayload;
 }
 
+const accessSecret = process.env.ACCESS_TOKEN_SECRET;
+
 export const authenticateToken = (
   req: AuthRequest,
   res: Response,
   next: NextFunction
-): void => {
+) => {
   const authHeader = req.headers["authorization"];
-  const token = authHeader?.split(" ")[1];
+  const token = authHeader && authHeader?.split(" ")[1];
+  console.log(token);
 
   if (!token) {
-    res.status(401).json({ message: "Token required" });
+    res.status(401).json({ message: "Access Token required" });
   } else {
     try {
-      const decoded = jwt.verify(
-        token,
-        process.env.JWT_SECRET as string
-      ) as JwtPayload;
+      const decoded = jwt.verify(token, accessSecret as string) as JwtPayload;
       req.user = decoded;
       next();
     } catch (error) {
