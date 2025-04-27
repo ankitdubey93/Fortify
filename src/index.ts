@@ -1,5 +1,4 @@
 import express from "express";
-import path from "path";
 import { connectDB } from "./db/connect";
 import { config } from "dotenv";
 import authRouter from "./routes/auth";

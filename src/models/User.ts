@@ -1,6 +1,7 @@
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, { Document, mongo, Schema, Types } from "mongoose";
 
-export interface Entry {
+export interface Entry extends mongoose.Types.Subdocument {
+  _id: mongoose.Types.ObjectId;
   website: string;
   username: string;
   password: string;
@@ -12,7 +13,7 @@ export interface User extends Document {
   name: string;
   username: string;
   password: string;
-  data: Entry[];
+  data: Types.DocumentArray<Entry>;
 }
 
 const entrySchema = new Schema<Entry>(
