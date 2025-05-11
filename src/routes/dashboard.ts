@@ -1,6 +1,7 @@
 import express from "express";
 import { authenticateToken, AuthRequest } from "../middleware/authMiddleware";
 import { User } from "../models/User";
+import { encrypt, decrypt } from "../utils/encryption";
 
 const dashboardRouter = express.Router();
 
@@ -23,9 +24,17 @@ dashboardRouter.get("/", async (req: AuthRequest, res: express.Response) => {
       return;
     }
 
+    const decryptedData = loggedInUser.data.map((entry) => ({
+      _id: entry._id,
+      website: entry.website,
+      username: entry.username,
+      password: decrypt(entry.password),
+      notes: entry.notes ? decrypt(entry.notes) : "",
+    }));
+
     res.status(200).json({
       message: `Welcome ${loggedInUser.name}`,
-      entries: loggedInUser.data,
+      entries: decryptedData,
     });
   } catch (error) {
     res.status(500).json({ message: "Internal server error." });
@@ -47,7 +56,12 @@ dashboardRouter.post("/", async (req: AuthRequest, res: express.Response) => {
       res.status(404).json({ message: "User not found." });
       return;
     }
-    user.data.push({ website, username, password, notes });
+    user.data.push({
+      website,
+      username,
+      password: encrypt(password),
+      notes: notes ? encrypt(notes) : "",
+    });
 
     await user.save();
 
@@ -84,10 +98,10 @@ dashboardRouter.put(
         return;
       }
 
-      (entry.website = website ?? entry.website),
-        (entry.username = username ?? entry.username),
-        (entry.password = password ?? entry.password),
-        (entry.notes = notes ?? entry.notes);
+      if (website) entry.website = website;
+      if (username) entry.username = username;
+      if (password) entry.password = encrypt(password);
+      if (notes) entry.notes = encrypt(notes);
 
       await user.save();
 
@@ -156,7 +170,14 @@ dashboardRouter.get(
         return;
       }
 
-      res.status(201).json(entry);
+      const decryptedEntry = {
+        _id: entry._id,
+        website: entry.website,
+        password: decrypt(entry.password),
+        notes: entry.notes ? decrypt(entry.notes) : "",
+      };
+
+      res.status(201).json(decryptedEntry);
     } catch (error) {
       res.status(500).json({ message: "Internal server error." });
     }
