@@ -8,9 +8,19 @@ import { RefreshToken } from "../models/RefreshToken";
 
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt";
 
+import cookieParser from "cookie-parser";
+
 import jwt from "jsonwebtoken";
 
 const router = Router();
+
+const refreshTokenCookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "strict" as const,
+  path: "/refresh",
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+};
 
 router.post("/signup", async (req: Request, res: Response) => {
   const { name, username, password } = req.body;
@@ -48,6 +58,8 @@ router.post("/signup", async (req: Request, res: Response) => {
       userId: savedUser._id,
       token: refreshToken,
     }).save();
+
+    res.cookie("refreshToken", refreshToken, refreshTokenCookieOptions);
 
     res.status(201).json({
       user: {
@@ -93,6 +105,8 @@ router.post("/signin", async (req: Request, res: Response) => {
       token: refreshToken,
     }).save();
 
+    res.cookie("refreshToken", refreshToken, refreshTokenCookieOptions);
+
     res.status(200).json({
       user: {
         _id: validUser._id,
@@ -108,7 +122,7 @@ router.post("/signin", async (req: Request, res: Response) => {
 });
 
 router.post("/signout", async (req: Request, res: Response) => {
-  const { refreshToken } = req.body;
+  const refreshToken = req.cookies?.refreshToken;
 
   if (!refreshToken) {
     res.status(400).json({ message: "Refresh token required." });
@@ -117,6 +131,12 @@ router.post("/signout", async (req: Request, res: Response) => {
 
   try {
     await RefreshToken.deleteOne({ token: refreshToken });
+    res.clearCookie("refreshToken", {
+      path: "/api/auth/refresh",
+      httpOnly: true,
+      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+    });
 
     res.status(200).json({ message: "Signed out successfully." });
   } catch (error) {
@@ -127,7 +147,7 @@ router.post("/signout", async (req: Request, res: Response) => {
 });
 
 router.post("/refresh", async (req: Request, res: Response) => {
-  const { refreshToken } = req.body;
+  const refreshToken = req.cookies?.refreshToken;
 
   if (!RefreshToken) {
     res.status(400).json({ message: "Refresh token is required." });
