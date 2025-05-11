@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { loginUser, registerUser } from "../services/authService";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../components/navbar";
+import { motion } from "framer-motion";
 
 const Auth = () => {
   const [isSignIn, setIsSignIn] = useState(true);
@@ -42,10 +42,21 @@ const Auth = () => {
   };
 
   return (
-    <div className="bg-sky-300 min-h-screen">
-      <Navbar />
-      <div className="flex items-center justify-center mt-30">
-        <div className="bg-white p-8 rounded-lg shadow-md w-[90%] max-w-md space-y-6">
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -30 }}
+      transition={{ duration: 0.1, ease: "easeInOut" }}
+    >
+      <div className="flex items-center justify-center mt-20">
+        <motion.div
+          key={isSignIn ? "sign-in" : "sign-up"}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.1 }}
+          className="bg-white p-8 rounded-lg shadow-md w-[90%] max-w-md space-y-6"
+        >
           <h2 className="text-3xl font-bold text-center">
             {isSignIn ? "Sign In" : "Create Account"}
           </h2>
@@ -67,7 +78,7 @@ const Auth = () => {
               />
             )}
             <input
-              type="username"
+              type="text"
               name="username"
               placeholder="Username"
               value={form.username}
@@ -117,9 +128,9 @@ const Auth = () => {
               </button>
             </p>
           </div>
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

@@ -1,10 +1,14 @@
-import Navbar from "../components/navbar";
 import logo from "../assets/logo.png";
+import { motion } from "framer-motion";
 
 const HomePage = () => {
   return (
-    <div className="bg-sky-300 min-h-screen">
-      <Navbar />
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.1 }}
+    >
       <div className="flex flex-col items-center justify-center text-center mt-2 px-4">
         <img src={logo} alt="Fortify Logo" className="w-80 h-80 mb-6" />
         <h2 className="text-4xl font-bold text-gray-800 mb-4">
@@ -17,7 +21,7 @@ const HomePage = () => {
           — your credentials stay protected and private.
         </p>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
