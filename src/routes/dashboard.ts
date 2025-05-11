@@ -49,17 +49,26 @@ dashboardRouter.post("/", async (req: AuthRequest, res: express.Response) => {
 
   const { website, username, password, notes } = req.body;
 
+  if (!website || !username || !password) {
+    res
+      .status(400)
+      .json({ message: "Website, username, and password are required." });
+    return;
+  }
+
   try {
     const user = await User.findById(req.user.userId);
+    console.log(user);
 
     if (!user) {
       res.status(404).json({ message: "User not found." });
       return;
     }
+
     user.data.push({
       website,
       username,
-      password: encrypt(password),
+      password: encrypt(password as string),
       notes: notes ? encrypt(notes) : "",
     });
 

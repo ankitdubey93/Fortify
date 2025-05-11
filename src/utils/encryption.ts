@@ -6,6 +6,10 @@ const secretKey = process.env.ENCRYPTION_SECRET_KEY as string;
 const ivLength = 16;
 
 export const encrypt = (text: string): string => {
+  if (!text || typeof text !== "string") {
+    throw new Error("Invalid input to encrypt(): must be a non-empty string.");
+  }
+
   const iv = crypto.randomBytes(ivLength);
   const cipher = crypto.createCipheriv(algorithm, Buffer.from(secretKey), iv);
   let encrypted = cipher.update(text);
