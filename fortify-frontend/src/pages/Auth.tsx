@@ -5,7 +5,13 @@ import Navbar from "../components/navbar";
 
 const Auth = () => {
   const [isSignIn, setIsSignIn] = useState(true);
-  const [form, setForm] = useState({ name: "", username: "", password: "" });
+  const [error, setError] = useState("");
+  const [form, setForm] = useState({
+    name: "",
+    username: "",
+    password: "",
+    confirmPassword: "",
+  });
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -13,13 +19,21 @@ const Auth = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+
+    if (!isSignIn && form.password !== form.confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
     try {
       if (isSignIn) {
         await loginUser({ username: form.username, password: form.password });
-        navigate("/dashboard"); // replace with your protected route
+        navigate("/dashboard");
       } else {
         await registerUser(form);
         setIsSignIn(true);
+        setForm({ name: "", username: "", password: "", confirmPassword: "" });
       }
     } catch (error) {
       console.error(error);
@@ -35,6 +49,10 @@ const Auth = () => {
           <h2 className="text-3xl font-bold text-center">
             {isSignIn ? "Sign In" : "Create Account"}
           </h2>
+
+          {error && (
+            <div className="text-red-600 text-sm text-center">{error}</div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isSignIn && (
@@ -66,6 +84,17 @@ const Auth = () => {
               className="w-full p-2 border rounded"
               required
             />
+            {!isSignIn && (
+              <input
+                type="password"
+                name="confirmPassword"
+                placeholder="Confirm Password"
+                value={form.confirmPassword}
+                onChange={handleChange}
+                className="w-full p-2 border rounded"
+                required
+              />
+            )}
             <button
               type="submit"
               className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
@@ -78,7 +107,10 @@ const Auth = () => {
             <p className="text-sm">
               {isSignIn ? "Don't have an account?" : "Already have an account?"}{" "}
               <button
-                onClick={() => setIsSignIn(!isSignIn)}
+                onClick={() => {
+                  setIsSignIn(!isSignIn);
+                  setError("");
+                }}
                 className="text-blue-600 hover:underline font-medium"
               >
                 {isSignIn ? "Sign Up" : "Sign In"}
