@@ -75,10 +75,11 @@ export const Dashboard: React.FunctionComponent = () => {
             }
           : null
       );
-      setEditingEntry(null);
-      setUpdatedEntry({});
     } catch (err) {
       console.error("Update failed", err);
+    } finally {
+      setEditingEntry(null);
+      setUpdatedEntry({});
     }
   };
 
@@ -171,15 +172,17 @@ export const Dashboard: React.FunctionComponent = () => {
 
       {/* Edit Entry Popup */}
       {editingEntry && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-sky-700 bg-opacity-50 flex items-center justify-center">
           <div className="bg-white p-6 rounded shadow-md w-full max-w-md">
             <h2 className="text-lg font-bold mb-4">Edit Entry</h2>
-            {["website", "username", "password", "notes"].map((field) => (
+            {(
+              ["website", "username", "password", "notes"] as (keyof Entry)[]
+            ).map((field) => (
               <input
                 key={field}
                 type="text"
                 placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
-                value={(updatedEntry as any)[field] || ""}
+                value={updatedEntry[field] || ""}
                 onChange={(e) =>
                   setUpdatedEntry({ ...updatedEntry, [field]: e.target.value })
                 }
@@ -206,15 +209,17 @@ export const Dashboard: React.FunctionComponent = () => {
 
       {/* Add Entry Popup */}
       {showAddPopup && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-sky-700 bg-opacity-50 flex items-center justify-center">
           <div className="bg-white p-6 rounded shadow-md w-full max-w-md">
             <h2 className="text-lg font-bold mb-4">Add New Entry</h2>
-            {["website", "username", "password", "notes"].map((field) => (
+            {(
+              ["website", "username", "password", "notes"] as (keyof Entry)[]
+            ).map((field) => (
               <input
                 key={field}
                 type="text"
                 placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
-                value={(newEntry as any)[field] || ""}
+                value={newEntry[field] || ""}
                 onChange={(e) =>
                   setNewEntry({ ...newEntry, [field]: e.target.value })
                 }

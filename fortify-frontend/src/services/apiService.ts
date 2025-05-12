@@ -84,7 +84,7 @@ export const getDashboardData = async () => {
 };
 
 export const deleteEntry = async (entryId: string) => {
-  const res = await fetch(`${API_URL_DASH}/entry/${entryId}`, {
+  const res = await fetch(`${API_URL_DASH}/${entryId}`, {
     method: "DELETE",
     credentials: "include",
   });
@@ -98,7 +98,7 @@ export const updateEntry = async (
   entryId: string,
   updatedData: Partial<Entry>
 ) => {
-  const res = await fetch(`${API_URL_DASH}/entry/${entryId}`, {
+  const res = await fetch(`${API_URL_DASH}/${entryId}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -126,7 +126,7 @@ export const refreshAccessToken = async () => {
 };
 
 export const addEntry = async (entryData: Partial<Entry>) => {
-  const res = await fetch(`${API_URL_DASH}/entry`, {
+  const res = await fetch(`${API_URL_DASH}/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

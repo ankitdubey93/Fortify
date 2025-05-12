@@ -75,7 +75,16 @@ dashboardRouter.post("/", async (req: AuthRequest, res: express.Response) => {
 
     await user.save();
 
-    res.status(201).json({ message: "Entry added successfully." });
+    const newEntry = user.data[user.data.length - 1];
+    const decryptedNewEntry = {
+      _id: newEntry._id,
+      website: newEntry.website,
+      username: newEntry.username,
+      password: decrypt(newEntry.password),
+      notes: newEntry.notes ? decrypt(newEntry.notes) : "",
+    };
+
+    res.status(201).json(decryptedNewEntry);
   } catch (error) {
     console.error("Error saving entry: ", error);
     res.status(500).json({ message: "Internal server error." });
@@ -112,10 +121,19 @@ dashboardRouter.put(
       if (username) entry.username = username;
       if (password) entry.password = encrypt(password);
       if (notes) entry.notes = encrypt(notes);
+      if (notes === "") entry.notes = "";
 
       await user.save();
 
-      res.status(200).json({ message: "Entry updated successfully." });
+      const decryptedUpdatedEntry = {
+        _id: entry._id,
+        website: entry.website,
+        username: entry.username,
+        password: decrypt(entry.password),
+        notes: entry.notes ? decrypt(entry.notes) : "",
+      };
+
+      res.status(200).json(decryptedUpdatedEntry);
     } catch (error) {
       res.status(500).json({ message: "Internal server error." });
     }
