@@ -29,6 +29,7 @@ export const Dashboard: React.FunctionComponent = () => {
   const [updatedEntry, setUpdatedEntry] = useState<Partial<Entry>>({});
   const [showAddPopup, setShowAddPopup] = useState(false);
   const [newEntry, setNewEntry] = useState<Partial<Entry>>({});
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,11 +40,16 @@ export const Dashboard: React.FunctionComponent = () => {
         setUser({ ...data.loggedInUser, data: data.entries });
       } catch (error) {
         console.error("Dashboard error:", error);
+        navigate("/auth");
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, [navigate]);
+
+  if (loading) return <div>Loading .....</div>;
 
   const handleDelete = async (entryId: string) => {
     try {
