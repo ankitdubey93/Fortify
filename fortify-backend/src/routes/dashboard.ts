@@ -14,7 +14,7 @@ dashboardRouter.get("/", async (req: AuthRequest, res: express.Response) => {
 
   try {
     const loggedInUser = await User.findById(req.user.userId).select(
-      "name data"
+      "name username data"
     );
 
     if (!loggedInUser) {
@@ -34,6 +34,7 @@ dashboardRouter.get("/", async (req: AuthRequest, res: express.Response) => {
 
     res.status(200).json({
       message: `Welcome ${loggedInUser.name}`,
+      loggedInUser,
       entries: decryptedData,
     });
   } catch (error) {

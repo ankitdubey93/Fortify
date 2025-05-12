@@ -124,3 +124,20 @@ export const refreshAccessToken = async () => {
 
   return await res.json();
 };
+
+export const addEntry = async (entryData: Partial<Entry>) => {
+  const res = await fetch(`${API_URL_DASH}/entry`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(entryData),
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to add entry");
+  }
+
+  return await res.json();
+};

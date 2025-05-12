@@ -4,6 +4,7 @@ import {
   getDashboardData,
   deleteEntry,
   updateEntry,
+  addEntry,
   signOutUser,
 } from "../services/apiService";
 
@@ -26,13 +27,16 @@ export const Dashboard: React.FunctionComponent = () => {
   const [user, setUser] = useState<User | null>(null);
   const [editingEntry, setEditingEntry] = useState<Entry | null>(null);
   const [updatedEntry, setUpdatedEntry] = useState<Partial<Entry>>({});
+  const [showAddPopup, setShowAddPopup] = useState(false);
+  const [newEntry, setNewEntry] = useState<Partial<Entry>>({});
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const data = await getDashboardData();
-        setUser(data.user);
+        console.log(data);
+        setUser({ ...data.loggedInUser, data: data.entries });
       } catch (error) {
         console.error("Dashboard error:", error);
       }
@@ -87,94 +91,101 @@ export const Dashboard: React.FunctionComponent = () => {
     }
   };
 
+  const handleAddEntry = async () => {
+    try {
+      const response = await addEntry(newEntry);
+      setUser((prevUser) =>
+        prevUser
+          ? {
+              ...prevUser,
+              data: [...prevUser.data, response],
+            }
+          : null
+      );
+      setNewEntry({});
+      setShowAddPopup(false);
+    } catch (error) {
+      console.error("Add entry failed:", error);
+    }
+  };
+
   return (
     <div className="p-4">
-      <h1 className="text-xl font-bold mb-4">Welcome, {user?.name}</h1>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-xl font-bold">Welcome, {user?.name}</h1>
+        <button
+          onClick={handleSignOut}
+          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+        >
+          Sign Out
+        </button>
+      </div>
+
       <button
-        onClick={handleSignOut}
-        className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+        onClick={() => setShowAddPopup(true)}
+        className="bg-green-500 text-white px-4 py-2 rounded mb-4"
       >
-        Sign Out
+        Add New Entry
       </button>
 
-      <ul className="space-y-4">
-        {user?.data.map((entry) => (
-          <li key={entry._id} className="border p-4 rounded shadow-sm">
-            <p>
-              <strong>Website:</strong> {entry.website}
-            </p>
-            <p>
-              <strong>Username:</strong> {entry.username}
-            </p>
-            <p>
-              <strong>Password:</strong> {entry.password}
-            </p>
-            {entry.notes && (
-              <p>
-                <strong>Notes:</strong> {entry.notes}
-              </p>
-            )}
-            <div className="mt-2 space-x-2">
-              <button
-                onClick={() => {
-                  setEditingEntry(entry);
-                  setUpdatedEntry(entry);
-                }}
-                className="bg-blue-500 text-white px-2 py-1 rounded"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => handleDelete(entry._id)}
-                className="bg-red-500 text-white px-2 py-1 rounded"
-              >
-                Delete
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
+      <div className="overflow-x-auto">
+        <table className="min-w-full bg-white border border-gray-300">
+          <thead>
+            <tr className="bg-gray-100">
+              <th className="border p-2">Website</th>
+              <th className="border p-2">Username</th>
+              <th className="border p-2">Password</th>
+              <th className="border p-2">Notes</th>
+              <th className="border p-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {user?.data.map((entry) => (
+              <tr key={entry._id} className="text-center">
+                <td className="border p-2">{entry.website}</td>
+                <td className="border p-2">{entry.username}</td>
+                <td className="border p-2">{entry.password}</td>
+                <td className="border p-2">{entry.notes || "-"}</td>
+                <td className="border p-2 space-x-2">
+                  <button
+                    onClick={() => {
+                      setEditingEntry(entry);
+                      setUpdatedEntry(entry);
+                    }}
+                    className="bg-blue-500 text-white px-2 py-1 rounded"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(entry._id)}
+                    className="bg-red-500 text-white px-2 py-1 rounded"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
+      {/* Edit Entry Popup */}
       {editingEntry && (
-        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-40 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white p-6 rounded shadow-md w-full max-w-md">
-            <h2 className="text-lg font-bold mb-2">Edit Entry</h2>
-            <input
-              type="text"
-              placeholder="Website"
-              value={updatedEntry.website || ""}
-              onChange={(e) =>
-                setUpdatedEntry({ ...updatedEntry, website: e.target.value })
-              }
-              className="w-full border p-2 mb-2"
-            />
-            <input
-              type="text"
-              placeholder="Username"
-              value={updatedEntry.username || ""}
-              onChange={(e) =>
-                setUpdatedEntry({ ...updatedEntry, username: e.target.value })
-              }
-              className="w-full border p-2 mb-2"
-            />
-            <input
-              type="text"
-              placeholder="Password"
-              value={updatedEntry.password || ""}
-              onChange={(e) =>
-                setUpdatedEntry({ ...updatedEntry, password: e.target.value })
-              }
-              className="w-full border p-2 mb-2"
-            />
-            <input
-              type="text"
-              placeholder="Notes"
-              value={updatedEntry.notes || ""}
-              onChange={(e) =>
-                setUpdatedEntry({ ...updatedEntry, notes: e.target.value })
-              }
-              className="w-full border p-2 mb-2"
-            />
+            <h2 className="text-lg font-bold mb-4">Edit Entry</h2>
+            {["website", "username", "password", "notes"].map((field) => (
+              <input
+                key={field}
+                type="text"
+                placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+                value={(updatedEntry as any)[field] || ""}
+                onChange={(e) =>
+                  setUpdatedEntry({ ...updatedEntry, [field]: e.target.value })
+                }
+                className="w-full border p-2 mb-2"
+              />
+            ))}
             <div className="flex justify-end gap-2">
               <button
                 onClick={handleUpdate}
@@ -184,6 +195,41 @@ export const Dashboard: React.FunctionComponent = () => {
               </button>
               <button
                 onClick={() => setEditingEntry(null)}
+                className="bg-gray-300 px-4 py-1 rounded"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Entry Popup */}
+      {showAddPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded shadow-md w-full max-w-md">
+            <h2 className="text-lg font-bold mb-4">Add New Entry</h2>
+            {["website", "username", "password", "notes"].map((field) => (
+              <input
+                key={field}
+                type="text"
+                placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+                value={(newEntry as any)[field] || ""}
+                onChange={(e) =>
+                  setNewEntry({ ...newEntry, [field]: e.target.value })
+                }
+                className="w-full border p-2 mb-2"
+              />
+            ))}
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={handleAddEntry}
+                className="bg-blue-500 text-white px-4 py-1 rounded"
+              >
+                Add
+              </button>
+              <button
+                onClick={() => setShowAddPopup(false)}
                 className="bg-gray-300 px-4 py-1 rounded"
               >
                 Cancel
