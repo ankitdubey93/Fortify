@@ -8,8 +8,6 @@ import { RefreshToken } from "../models/RefreshToken";
 
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt";
 
-import cookieParser from "cookie-parser";
-
 import jwt from "jsonwebtoken";
 
 const router = Router();
@@ -18,8 +16,16 @@ const refreshTokenCookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
   sameSite: "strict" as const,
-  path: "/refresh",
+  path: "/",
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+};
+
+const accessTokenCookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax" as const,
+  path: "/", // send with all requests
+  maxAge: 15 * 60 * 1000, // 15 minutes
 };
 
 router.post("/signup", async (req: Request, res: Response) => {
@@ -60,6 +66,7 @@ router.post("/signup", async (req: Request, res: Response) => {
     }).save();
 
     res.cookie("refreshToken", refreshToken, refreshTokenCookieOptions);
+    res.cookie("accessToken", accessToken, accessTokenCookieOptions);
 
     res.status(201).json({
       user: {
@@ -67,9 +74,6 @@ router.post("/signup", async (req: Request, res: Response) => {
         name: savedUser.name,
         username: savedUser.username,
       },
-      accessToken,
-      refreshToken,
-
       message: "User created succesfully.",
     });
     return;
@@ -105,6 +109,7 @@ router.post("/signin", async (req: Request, res: Response) => {
       token: refreshToken,
     }).save();
 
+    res.cookie("accessToken", accessToken, accessTokenCookieOptions);
     res.cookie("refreshToken", refreshToken, refreshTokenCookieOptions);
 
     res.status(200).json({
@@ -113,8 +118,6 @@ router.post("/signin", async (req: Request, res: Response) => {
         name: validUser.name,
         username: validUser.username,
       },
-      accessToken,
-      refreshToken,
     });
   } catch (error) {
     res.status(500).json({ message: "fdgd" });
@@ -122,6 +125,7 @@ router.post("/signin", async (req: Request, res: Response) => {
 });
 
 router.post("/signout", async (req: Request, res: Response) => {
+  console.log("Cookies received on signout:", req.cookies);
   const refreshToken = req.cookies?.refreshToken;
 
   if (!refreshToken) {
@@ -131,8 +135,15 @@ router.post("/signout", async (req: Request, res: Response) => {
 
   try {
     await RefreshToken.deleteOne({ token: refreshToken });
+    res.clearCookie("accessToken", {
+      path: "/",
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+    });
+
     res.clearCookie("refreshToken", {
-      path: "/api/auth/refresh",
+      path: "/",
       httpOnly: true,
       sameSite: "strict",
       secure: process.env.NODE_ENV === "production",
@@ -149,7 +160,7 @@ router.post("/signout", async (req: Request, res: Response) => {
 router.post("/refresh", async (req: Request, res: Response) => {
   const refreshToken = req.cookies?.refreshToken;
 
-  if (!RefreshToken) {
+  if (!refreshToken) {
     res.status(400).json({ message: "Refresh token is required." });
     return;
   }
@@ -168,8 +179,8 @@ router.post("/refresh", async (req: Request, res: Response) => {
     ) as { userId: string };
 
     const newAccessToken = generateAccessToken(payload.userId);
-
-    res.status(200).json({ accessToken: newAccessToken });
+    res.cookie("accessToken", newAccessToken, accessTokenCookieOptions);
+    res.status(200).json({ message: "Access token refreshed." });
   } catch (error) {
     console.error("Refresh error:", error);
     res.status(403).json({ message: "Invalid or expired refresh token." });

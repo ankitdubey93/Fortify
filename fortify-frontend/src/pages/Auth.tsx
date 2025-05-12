@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { loginUser, registerUser } from "../services/authService";
+import { loginUser, registerUser } from "../services/apiService";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
@@ -28,7 +28,11 @@ const Auth = () => {
 
     try {
       if (isSignIn) {
-        await loginUser({ username: form.username, password: form.password });
+        const data = await loginUser({
+          username: form.username,
+          password: form.password,
+        });
+
         navigate("/dashboard");
       } else {
         await registerUser(form);

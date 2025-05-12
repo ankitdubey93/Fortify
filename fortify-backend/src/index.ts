@@ -11,6 +11,7 @@ config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.use(cookieParser());
 app.use(
   cors({
     origin: "http://localhost:5173",
@@ -19,7 +20,6 @@ app.use(
 );
 
 app.use(express.json());
-app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 const mainRouter = express.Router();

@@ -4,6 +4,7 @@ import HomePage from "./pages/Home";
 import AboutPage from "./pages/About";
 import Navbar from "./components/navbar";
 import { AnimatePresence } from "framer-motion";
+import { Dashboard } from "./pages/Dashboard";
 
 const App = () => {
   const location = useLocation();
@@ -15,6 +16,7 @@ const App = () => {
           <Route path="/" element={<HomePage />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
       </AnimatePresence>
     </div>
