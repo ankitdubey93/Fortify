@@ -8,9 +8,10 @@ import { Dashboard } from "./pages/Dashboard";
 
 const App = () => {
   const location = useLocation();
+  const isDashboardRoute = location.pathname.startsWith("/dashboard");
   return (
     <div className="min-h-screen bg-sky-300">
-      <Navbar />
+      {!isDashboardRoute && <Navbar />}
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<HomePage />} />

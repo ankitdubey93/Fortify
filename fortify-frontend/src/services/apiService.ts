@@ -1,3 +1,5 @@
+import { fetchWithRefresh } from "./httpClient";
+
 const API_URL_AUTH = "http://localhost:3000/api/auth";
 const API_URL_DASH = "http://localhost:3000/api/dashboard";
 
@@ -67,7 +69,7 @@ export const signOutUser = async () => {
 };
 
 export const getDashboardData = async () => {
-  const response = await fetch(`${API_URL_DASH}/`, {
+  const response = await fetchWithRefresh(`${API_URL_DASH}/`, {
     method: "GET",
     credentials: "include",
   });
@@ -84,7 +86,7 @@ export const getDashboardData = async () => {
 };
 
 export const deleteEntry = async (entryId: string) => {
-  const res = await fetch(`${API_URL_DASH}/${entryId}`, {
+  const res = await fetchWithRefresh(`${API_URL_DASH}/${entryId}`, {
     method: "DELETE",
     credentials: "include",
   });
@@ -98,7 +100,7 @@ export const updateEntry = async (
   entryId: string,
   updatedData: Partial<Entry>
 ) => {
-  const res = await fetch(`${API_URL_DASH}/${entryId}`, {
+  const res = await fetchWithRefresh(`${API_URL_DASH}/${entryId}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -126,7 +128,7 @@ export const refreshAccessToken = async () => {
 };
 
 export const addEntry = async (entryData: Partial<Entry>) => {
-  const res = await fetch(`${API_URL_DASH}/`, {
+  const res = await fetchWithRefresh(`${API_URL_DASH}/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
