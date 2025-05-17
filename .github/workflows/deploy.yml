@@ -23,7 +23,7 @@ jobs:
           key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
           script: |
 
-            cd ~/fortify
+            cd ~/Fortify
             git pull origin main
 
             cd backend
