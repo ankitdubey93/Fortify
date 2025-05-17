@@ -5,7 +5,7 @@ name: Deploy Fortify Full Stack
 on:
   push:
     branches: 
-      -main
+      - main
 
 jobs:
   deploy:
@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Deploy to Lightsail via SSH
-        uses: appleboy/ssh-ation@v1.0.0
+        uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.LIGHTSAIL_HOST }}
           username: ${{ secrets.LIGHTSAIL_USER }}
