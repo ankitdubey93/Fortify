@@ -18,7 +18,7 @@ const DashboardNavbar: React.FC<DashboardNavbarProps> = ({
         </div>
         <div>
           <h1 className="text-xl font-bold text-sky-600">
-            Welcome test, hello ankit {name}
+            Welcome test, hello ankit snow {name}
           </h1>
         </div>
       </div>
