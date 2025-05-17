@@ -1,7 +1,7 @@
 import { fetchWithRefresh } from "./httpClient";
 
-const API_URL_AUTH = "http://localhost:3000/api/auth";
-const API_URL_DASH = "http://localhost:3000/api/dashboard";
+const API_URL_AUTH = "https://13.232.226.34:3000/api/auth";
+const API_URL_DASH = "https://13.232.226.34:3000/api/dashboard";
 
 interface Entry {
   _id: string;

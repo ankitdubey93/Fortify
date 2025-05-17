@@ -28,7 +28,7 @@ const Auth = () => {
 
     try {
       if (isSignIn) {
-        const data = await loginUser({
+         await loginUser({
           username: form.username,
           password: form.password,
         });
