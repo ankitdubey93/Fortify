@@ -1,4 +1,5 @@
 import { fetchWithRefresh } from "./httpClient";
+import argon2 from "argon2-browser";
 
 const API_URL_AUTH = "https://13.232.226.34:3000/api/auth";
 const API_URL_DASH = "https://13.232.226.34:3000/api/dashboard";
@@ -14,22 +15,44 @@ interface Entry {
 export const loginUser = async (credentials: {
   username: string;
   password: string;
+  masterPassword: string;
 }) => {
-  console.log(credentials);
+  const { username, password, masterPassword } = credentials;
+
   const response = await fetch(`${API_URL_AUTH}/signin`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     credentials: "include",
-    body: JSON.stringify(credentials),
+    body: JSON.stringify({ username, password }),
   });
 
   if (!response.ok) {
     throw new Error("Login Failed");
   }
 
-  return await response.json();
+  const data = await response.json();
+
+  if (!data.vaultSalt) {
+    throw new Error("Missing vault salt from server.");
+  }
+
+  const salt = new Uint8Array(
+    [...atob(data.vaultSalt)].map((c) => c.charCodeAt(0))
+  );
+
+  const { hash } = await argon2.hash({
+    pass: masterPassword,
+    salt,
+    type: argon2.ArgonType.Argon2id,
+    hashLen: 32,
+  });
+
+  // hash is now a string
+  const encryptionKey = hash;
+
+  return { ...data, encryptionKey };
 };
 
 export const registerUser = async (data: {
@@ -37,15 +60,28 @@ export const registerUser = async (data: {
   username: string;
   password: string;
   confirmPassword: string;
+  masterPassword: string;
+  confirmMasterPassword: string;
 }) => {
-  const { name, username, password } = data;
+  const { name, username, password, masterPassword } = data;
+
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+
+  await argon2.hash({
+    pass: masterPassword,
+    salt,
+    type: argon2.ArgonType.Argon2id,
+  });
+
+  const encodedSalt = btoa(String.fromCharCode(...salt));
+
   const response = await fetch(`${API_URL_AUTH}/signup`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     credentials: "include",
-    body: JSON.stringify({ name, username, password }),
+    body: JSON.stringify({ name, username, password, vaultSalt: encodedSalt }),
   });
 
   if (!response.ok) {
