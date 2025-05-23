@@ -60,20 +60,8 @@ export const registerUser = async (data: {
   username: string;
   password: string;
   confirmPassword: string;
-  masterPassword: string;
-  confirmMasterPassword: string;
 }) => {
-  const { name, username, password, masterPassword } = data;
-
-  const salt = crypto.getRandomValues(new Uint8Array(16));
-
-  await argon2.hash({
-    pass: masterPassword,
-    salt,
-    type: argon2.ArgonType.Argon2id,
-  });
-
-  const encodedSalt = btoa(String.fromCharCode(...salt));
+  const { name, username, password } = data;
 
   const response = await fetch(`${API_URL_AUTH}/signup`, {
     method: "POST",
@@ -81,7 +69,7 @@ export const registerUser = async (data: {
       "Content-Type": "application/json",
     },
     credentials: "include",
-    body: JSON.stringify({ name, username, password, vaultSalt: encodedSalt }),
+    body: JSON.stringify({ name, username, password }),
   });
 
   if (!response.ok) {
