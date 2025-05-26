@@ -1,3 +1,7 @@
+import { config } from "dotenv";
+
+import { validateEnv } from "./utils/validateEnv";
+
 import express from "express";
 
 import cors from "cors";
@@ -6,19 +10,33 @@ import cookieParser from "cookie-parser";
 
 import https from "https";
 
+import http from "http";
+
 import fs from "fs";
 
 import path from "path";
 
-import { config } from "dotenv";
+const envPath = path.resolve(__dirname, "../.env.development");
+
+console.log("Looking for .env at:", envPath);
+console.log("Exists:", fs.existsSync(envPath));
 
 if (process.env.NODE_ENV === "production") {
-  config({ path: path.resolve(__dirname, "./.env.production") });
+  config({ path: path.resolve(__dirname, "../.env.production") });
   console.log("Loading production environment variables.");
 } else {
-  config({ path: path.resolve(__dirname, "./.env.development") });
+  config({ path: path.resolve(__dirname, "../.env.development") });
   console.log("Loading development environment variables.");
 }
+console.log("Loaded env:", {
+  ACCESS_TOKEN_SECRET: process.env.ACCESS_TOKEN_SECRET,
+  REFRESH_TOKEN_SECRET: process.env.REFRESH_TOKEN_SECRET,
+  JWT_SECRET: process.env.JWT_SECRET,
+  MONGODB_URI: process.env.MONGODB_URI,
+  FRONTEND_URL: process.env.FRONTEND_URL,
+});
+
+validateEnv();
 
 import { connectDB } from "./db/connect";
 
@@ -32,6 +50,8 @@ const PORT = process.env.PORT || 3000;
 
 const allowedOrigin = process.env.FRONTEND_URL;
 
+console.log("Allowed Origin:", allowedOrigin);
+
 if (!allowedOrigin) {
   console.error(
     "FRONTEND_URL is not defined in the environment variables. CORS might not work correctly."
@@ -39,7 +59,7 @@ if (!allowedOrigin) {
   process.exit(1);
 }
 
-let credentials;
+let credentials: { key: string; cert: string } | undefined;
 
 // Load SSL cert and key
 try {
@@ -93,20 +113,17 @@ const startServer = async () => {
   try {
     await connectDB();
 
-    let server;
-
-    if (credentials) {
-      server = https.createServerServer(credentials, app);
-      console.log("Starting HTTPS server ......");
+    if (process.env.NODE_ENV === "production" && credentials) {
+      const httpsServer = https.createServer(credentials, app);
+      httpsServer.listen(PORT, () => {
+        console.log(`HTTPS Server running on PORT ${PORT}`);
+      });
+    } else {
+      const httpServer = http.createServer(app);
+      httpServer.listen(PORT, () => {
+        console.log(`HTTP Server running on http://localhost:${PORT}`);
+      });
     }
-
-    const httpsServer = https.createServer(credentials, app);
-
-    // const httpsServer = https.createServer(credentials, app);
-
-    httpsServer.listen(PORT, () => {
-      console.log(`✅ HTTPS Server running on ${allowedOrigin}:${PORT}`);
-    });
   } catch (err) {
     console.error("❌ Server failed to start:", err);
   }

@@ -28,7 +28,7 @@ const Auth = () => {
 
     try {
       if (isSignIn) {
-         await loginUser({
+        await loginUser({
           username: form.username,
           password: form.password,
         });
@@ -36,8 +36,7 @@ const Auth = () => {
         navigate("/dashboard");
       } else {
         await registerUser(form);
-        setIsSignIn(true);
-        setForm({ name: "", username: "", password: "", confirmPassword: "" });
+        navigate("/set-master-password");
       }
     } catch (error) {
       console.error(error);

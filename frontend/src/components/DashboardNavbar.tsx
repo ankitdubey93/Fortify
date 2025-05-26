@@ -17,9 +17,7 @@ const DashboardNavbar: React.FC<DashboardNavbarProps> = ({
           <Link to="/">Fortify</Link>
         </div>
         <div>
-          <h1 className="text-xl font-bold text-sky-600">
-            Welcome test, hello final {name}
-          </h1>
+          <h1 className="text-xl font-bold text-sky-600">Welcome {name}</h1>
         </div>
       </div>
       <div className="space-x-6 flex items-center">

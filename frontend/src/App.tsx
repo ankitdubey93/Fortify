@@ -5,6 +5,7 @@ import AboutPage from "./pages/About";
 import Navbar from "./components/navbar";
 import { AnimatePresence } from "framer-motion";
 import { Dashboard } from "./pages/Dashboard";
+import { SetMasterPasswordPage } from "./pages/SetMasterPasswordPage";
 
 const App = () => {
   const location = useLocation();
@@ -18,6 +19,10 @@ const App = () => {
           <Route path="/auth" element={<Auth />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route
+            path="/set-master-password"
+            element={<SetMasterPasswordPage />}
+          />
         </Routes>
       </AnimatePresence>
     </div>
