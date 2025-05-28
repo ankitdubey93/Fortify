@@ -36,32 +36,22 @@ export const registerUser = async (data: {
   return await response.json();
 };
 
-// export const submitVaultSalt = async (masterPassword: string) => {
-//   const salt = crypto.getRandomValues(new Uint8Array(16));
+export const storeVaultSalt = async (vaultSaltBase64: string) => {
+  const response = await fetch(`${API_URL_DASH}/set-master-password`, {
+    method: "POST",
+    headers: {
+      "Context-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify({ vaultSalt: vaultSaltBase64 }),
+  });
 
-//   await argon2.hash({
-//     pass: masterPassword,
-//     salt,
-//     type: argon2.ArgonType.Argon2id,
-//   });
+  if (!response.ok) {
+    throw new Error("Failed to store vault salt.");
+  }
 
-//   const encodedSalt = btoa(String.fromCharCode(...salt));
-
-//   const response = await fetch(`${API_URL_DASH}/set-master-password`, {
-//     method: "POST",
-//     headers: {
-//       "Content-Type": "application/json",
-//     },
-//     credentials: "include",
-//     body: JSON.stringify({ vaultSalt: encodedSalt }),
-//   });
-
-//   if (!response.ok) {
-//     throw new Error("Failed to store vault salt.");
-//   }
-
-//   return await response.json();
-// };
+  return await response.json();
+};
 
 export const loginUser = async (credentials: {
   username: string;
