@@ -1,18 +1,37 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMasterPassword } from "../contexts/useMasterPassword";
 import { generateSalt, bufferToBase64 } from "../utils/cryptoUtils";
 import { deriveKey } from "../utils/crypto/deriveKey";
-import { storeVaultSalt } from "../services/apiService";
+import { getDashboardData, storeVaultSalt } from "../services/apiService";
 
 const SetMasterPasswordPage = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [method, setMethod] = useState<"pbkdf2" | "argon2id">("pbkdf2");
+  const [loading, setLoading] = useState(true);
   const { setEncryptionKey } = useMasterPassword();
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkMasterPassword = async () => {
+      try {
+        const userData = await getDashboardData();
+        if (userData.hasMasterPassword) {
+          navigate("/dashboard");
+        } else {
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error("Error fetching user data", error);
+        navigate("/auth");
+      }
+    };
+
+    checkMasterPassword();
+  }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,6 +55,8 @@ const SetMasterPasswordPage = () => {
       setError("Failed to set master password.");
     }
   };
+
+  if (loading) return <div>Loading......</div>;
 
   return (
     <div className="flex justify-center mt-24">

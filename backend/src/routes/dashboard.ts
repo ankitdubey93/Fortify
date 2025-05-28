@@ -51,7 +51,7 @@ dashboardRouter.get("/", async (req: AuthRequest, res: express.Response) => {
 
   try {
     const loggedInUser = await User.findById(req.user.userId).select(
-      "name username data"
+      "name username data encryptionSalt"
     );
 
     if (!loggedInUser) {
@@ -73,6 +73,7 @@ dashboardRouter.get("/", async (req: AuthRequest, res: express.Response) => {
       message: `Welcome ${loggedInUser.name}`,
       loggedInUser,
       entries: decryptedData,
+      hasMasterPassword: !!loggedInUser.encryptionSalt,
     });
   } catch (error) {
     res.status(500).json({ message: "Internal server error." });
