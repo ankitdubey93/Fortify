@@ -1,14 +1,15 @@
+import bundledArgon2 from "argon2-browser/dist/argon2-bundled.min.js";
+
 export const deriveKey = async (
   password: string,
   salt: Uint8Array,
-  method: "pbkdf2" | "argon2" = "pbkdf2"
+  method: "pbkdf2" | "argon2id" = "pbkdf2"
 ): Promise<CryptoKey> => {
-  if (method === "argon2") {
-    const argon2 = await import("argon2-browser");
-    const result = await argon2.hash({
+  if (method === "argon2id") {
+    const result = await bundledArgon2.hash({
       pass: password,
       salt,
-      type: argon2.ArgonType.Argon2id,
+      type: bundledArgon2.ArgonType.Argon2id,
       hashLen: 32,
       time: 3,
       mem: 65536,

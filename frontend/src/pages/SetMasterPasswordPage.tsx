@@ -9,7 +9,9 @@ const SetMasterPasswordPage = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const [method, setMethod] = useState<"pbkdf2" | "argon2id">("pbkdf2");
   const { setEncryptionKey } = useMasterPassword();
+
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -22,11 +24,11 @@ const SetMasterPasswordPage = () => {
 
     try {
       const salt = generateSalt();
-      const key = await deriveKey(password, salt, "pbkdf2");
+      const key = await deriveKey(password, salt, method);
       setEncryptionKey(key);
 
       const encodedSalt = bufferToBase64(salt);
-      await storeVaultSalt(encodedSalt);
+      await storeVaultSalt(encodedSalt, method);
 
       navigate("/dashboard");
     } catch (error) {
@@ -61,6 +63,14 @@ const SetMasterPasswordPage = () => {
           className="w-full border rounded p-2"
           required
         />
+        <select
+          value={method}
+          onChange={(e) => setMethod(e.target.value as "pbkdf2" | "argon2id")}
+          className="w-full border rounded p-2"
+        >
+          <option value="pbkdf2">PBKDF2</option>
+          <option value="argon2id">Argon2id</option>
+        </select>
         <button
           type="submit"
           className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"

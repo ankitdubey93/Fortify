@@ -7,6 +7,43 @@ const dashboardRouter = express.Router();
 
 dashboardRouter.use(authenticateToken);
 
+dashboardRouter.post(
+  "/set-master-password",
+  async (req: AuthRequest, res: express.Response) => {
+    const userId = req.user?.userId;
+    const { encryptionSalt, keyDerivationMethod } = req.body;
+
+    if (!encryptionSalt || !keyDerivationMethod) {
+      res.status(400).json({ error: "Missing required fields." });
+      return;
+    }
+
+    try {
+      const user = await User.findById(userId);
+      if (!user) {
+        res.status(404).json({ error: "User not found." });
+        return;
+      }
+
+      if (user.encryptionSalt) {
+        res.status(400).json({ error: "Master password already set." });
+        return;
+      }
+
+      user.encryptionSalt = encryptionSalt;
+      user.keyDerivationMethod = keyDerivationMethod;
+
+      await user.save();
+      res.status(200).json({ message: "Encryption parameters saved." });
+      return;
+    } catch (error) {
+      console.error("Error setting master password info:", error);
+      res.status(500).json({ error: "Internal Server error" });
+      return;
+    }
+  }
+);
+
 dashboardRouter.get("/", async (req: AuthRequest, res: express.Response) => {
   if (!req.user) {
     throw new Error("Not authorized.");

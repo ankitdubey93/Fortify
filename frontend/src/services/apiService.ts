@@ -36,14 +36,20 @@ export const registerUser = async (data: {
   return await response.json();
 };
 
-export const storeVaultSalt = async (vaultSaltBase64: string) => {
+export const storeVaultSalt = async (
+  vaultSaltBase64: string,
+  method: string
+) => {
   const response = await fetch(`${API_URL_DASH}/set-master-password`, {
     method: "POST",
     headers: {
-      "Context-Type": "application/json",
+      "Content-Type": "application/json",
     },
     credentials: "include",
-    body: JSON.stringify({ vaultSalt: vaultSaltBase64 }),
+    body: JSON.stringify({
+      encryptionSalt: vaultSaltBase64,
+      keyDerivationMethod: method,
+    }),
   });
 
   if (!response.ok) {

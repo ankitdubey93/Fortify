@@ -13,6 +13,8 @@ export interface User extends Document {
   name: string;
   username: string;
   password: string;
+  encryptionSalt?: string;
+  keyDerivationMethod?: "argon2id" | "pbkdf2";
   data: Types.DocumentArray<Entry>;
 }
 
@@ -30,6 +32,8 @@ const userSchema = new Schema<User>({
   name: { type: String, required: true },
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  encryptionSalt: { type: String },
+  keyDerivationMethod: { type: String, enum: ["argon2id", "pbkdf2"] },
   data: [entrySchema],
 });
 
