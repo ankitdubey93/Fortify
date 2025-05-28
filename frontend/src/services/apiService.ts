@@ -75,10 +75,12 @@ export const loginUser = async (credentials: {
   });
 
   if (!response.ok) {
-    throw new Error("Login Failed");
+    const errorData = await response.json();
+
+    throw new Error(errorData.message || "Failed to sign in.");
   }
 
-  await response.json();
+  return await response.json();
 };
 
 export const signOutUser = async () => {

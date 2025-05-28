@@ -39,8 +39,12 @@ const Auth = () => {
         navigate("/set-master-password");
       }
     } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
       console.error(error);
-      alert("Something went wrong.");
     }
   };
 
