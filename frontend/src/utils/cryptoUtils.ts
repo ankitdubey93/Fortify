@@ -8,32 +8,32 @@ export const generateSalt = (): Uint8Array => {
   return crypto.getRandomValues(new Uint8Array(16));
 };
 
-export const deriveKey = async (
-  password: string,
-  salt: Uint8Array
-): Promise<CryptoKey> => {
-  const encoder = new TextEncoder();
-  const keyMaterial = await window.crypto.subtle.importKey(
-    "raw",
-    encoder.encode(password),
-    { name: "PBKDF2" },
-    false,
-    ["deriveKey"]
-  );
+// export const deriveKey = async (
+//   password: string,
+//   salt: Uint8Array
+// ): Promise<CryptoKey> => {
+//   const encoder = new TextEncoder();
+//   const keyMaterial = await window.crypto.subtle.importKey(
+//     "raw",
+//     encoder.encode(password),
+//     { name: "PBKDF2" },
+//     false,
+//     ["deriveKey"]
+//   );
 
-  return await window.crypto.subtle.deriveKey(
-    {
-      name: "PBKDF2",
-      salt,
-      iterations: 100_000,
-      hash: "SHA-256",
-    },
-    keyMaterial,
-    { name: "AES-GCM", length: 256 },
-    true,
-    ["encrypt", "decrypt"]
-  );
-};
+//   return await window.crypto.subtle.deriveKey(
+//     {
+//       name: "PBKDF2",
+//       salt,
+//       iterations: 100000,
+//       hash: "SHA-256",
+//     },
+//     keyMaterial,
+//     { name: "AES-GCM", length: 256 },
+//     true,
+//     ["encrypt", "decrypt"]
+//   );
+// };
 
 export const encryptData = async (
   plainText: string,

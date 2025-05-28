@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMasterPassword } from "../contexts/MasterPasswordProvider";
-import { deriveKey, generateSalt, bufferToBase64 } from "../utils/cryptoUtils";
+import { useMasterPassword } from "../contexts/useMasterPassword";
+import { generateSalt, bufferToBase64 } from "../utils/cryptoUtils";
+import { deriveKey } from "../utils/crypto/deriveKey";
 import { storeVaultSalt } from "../services/apiService";
 
 const SetMasterPasswordPage = () => {
@@ -21,7 +22,7 @@ const SetMasterPasswordPage = () => {
 
     try {
       const salt = generateSalt();
-      const key = await deriveKey(password, salt);
+      const key = await deriveKey(password, salt, "pbkdf2");
       setEncryptionKey(key);
 
       const encodedSalt = bufferToBase64(salt);
