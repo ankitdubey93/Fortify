@@ -8,6 +8,13 @@ import {
   signOutUser,
 } from "../services/apiService";
 import DashboardNavbar from "../components/DashboardNavbar";
+import { useMasterPassword } from "../contexts/useMasterPassword";
+import { encryptData } from "../utils/cryptoUtils";
+
+interface EncryptedData {
+  cipherText: string;
+  iv: string;
+}
 
 interface Entry {
   _id: string;
@@ -15,6 +22,14 @@ interface Entry {
   username: string;
   password: string;
   notes?: string;
+  iv: string;
+}
+
+interface EncryptedEntryPayload {
+  website: EncryptedData;
+  username: EncryptedData;
+  password: EncryptedData;
+  notes?: EncryptedData;
 }
 
 interface User {
@@ -32,6 +47,8 @@ export const Dashboard: React.FunctionComponent = () => {
   const [newEntry, setNewEntry] = useState<Partial<Entry>>({});
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  const { encryptionKey } = useMasterPassword();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -100,8 +117,42 @@ export const Dashboard: React.FunctionComponent = () => {
   };
 
   const handleAddEntry = async () => {
+    if (
+      !encryptionKey ||
+      !newEntry.website ||
+      !newEntry.username ||
+      !newEntry.password
+    ) {
+      // Basic validation: ensure required fields are not empty
+      console.error("Website, username, and password are required.");
+      return;
+    }
+
     try {
-      const response = await addEntry(newEntry);
+      const encryptedWebsite = await encryptData(
+        newEntry.website,
+        encryptionKey
+      );
+      const encryptedUsername = await encryptData(
+        newEntry.username,
+        encryptionKey
+      );
+      const encryptedPassword = await encryptData(
+        newEntry.password,
+        encryptionKey
+      );
+      const encryptedNotes = newEntry.notes
+        ? await encryptData(newEntry.notes, encryptionKey)
+        : { cipherText: "", iv: encryptedWebsite.iv };
+
+      const payloadToSendToBackend: EncryptedEntryPayload = {
+        website: encryptedWebsite,
+        username: encryptedUsername,
+        password: encryptedPassword,
+        notes: encryptedNotes,
+      };
+
+      const response = await addEntry(payloadToSendToBackend);
       setUser((prevUser) =>
         prevUser
           ? {

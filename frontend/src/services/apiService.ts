@@ -12,6 +12,18 @@ interface Entry {
   notes?: string;
 }
 
+interface EncryptedData {
+  cipherText: string;
+  iv: string;
+}
+
+interface EncryptedEntryPayload {
+  website: EncryptedData;
+  username: EncryptedData;
+  password: EncryptedData;
+  notes?: EncryptedData;
+}
+
 export const registerUser = async (data: {
   name: string;
   username: string;
@@ -155,7 +167,7 @@ export const refreshAccessToken = async () => {
   return await res.json();
 };
 
-export const addEntry = async (entryData: Partial<Entry>) => {
+export const addEntry = async (entryData: EncryptedEntryPayload) => {
   const res = await fetchWithRefresh(`${API_URL_DASH}/`, {
     method: "POST",
     headers: {
