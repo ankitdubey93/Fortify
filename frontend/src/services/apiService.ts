@@ -4,6 +4,8 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_URL_AUTH = `${BASE_URL}/auth`;
 const API_URL_DASH = `${BASE_URL}/dashboard`;
 
+// Decrypted (frontend display) - This interface is primarily for frontend logic convenience
+// and not directly used in API calls to send data to backend.
 interface Entry {
   _id: string;
   website: string;
@@ -12,12 +14,14 @@ interface Entry {
   notes?: string;
 }
 
+// Encrypted data structure for fields - This is what will be sent to/from backend
 interface EncryptedData {
   cipherText: string;
   iv: string;
 }
 
-interface EncryptedEntryPayload {
+// Payload for adding a new entry (all fields are encrypted)
+export interface EncryptedEntryPayload {
   website: EncryptedData;
   username: EncryptedData;
   password: EncryptedData;

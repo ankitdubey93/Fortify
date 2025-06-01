@@ -1,65 +1,59 @@
-import { useCallback, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useMasterPassword } from "../contexts/useMasterPassword";
-import { getDashboardData } from "../services/apiService";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useAuth } from "../hooks/useAuth";
+import {
+  getDashboardData,
+  addEntry,
+  updateEntry,
+  deleteEntry,
+  type EncryptedEntryPayload,
+} from "../services/apiService";
 
-interface User {
+import { motion } from "framer-motion";
+import { encryptData, decryptData, base64ToBuffer } from "../utils/cryptoUtils";
+import { deriveKey } from "../utils/crypto/deriveKey";
+
+interface DecryptedEntry {
   _id: string;
-  name: string;
+  website: string;
   username: string;
-  data: EncryptedEntry[];
-  encryptionSalt: string;
+  password: string;
+  notes?: string;
 }
 
-export const Entries: React.FunctionComponent = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [decryptedEntries, setDecryptedEntries] = useState<DecryptedEntry[]>(
-    []
+interface BackendEncryptedEntry {
+  _id: string;
+  website: { cipherText: string; iv: string };
+  username: { cipherText: string; iv: string };
+  password: { cipherText: string; iv: string };
+  notes?: { cipherText: string; iv: string };
+}
+
+const CredentialVault: React.FC = () => {
+  const { user } = useAuth();
+
+  const [sessionMasterPassword, setSessionMasterPassword] = useState<
+    string | null
+  >(null);
+  const [masterPasswordInput, setMasterPasswordInput] = useState<string>("");
+  const [isMasterPasswordVerified, setIsMasterPasswordVerified] =
+    useState<boolean>(false);
+  const [masterPasswordError, setMasterPasswordError] = useState<string | null>(
+    null
   );
-  const [editingEntry, setEditingEntry] = useState<DecryptedEntry | null>(null);
-  const [updatedEntry, setUpdatedEntry] = useState<Partial<DecryptedEntry>>({});
-  const [showAddPopup, setShowAddPopup] = useState(false);
-  const [newEntry, setNewEntry] = useState<Partial<DecryptedEntry>>({});
-  const [loading, setLoading] = useState(true);
 
-  const navigate = useNavigate();
-  const { encryptionKey, clearEncryptionKey } = useMasterPassword();
+  const [entries, setEntries] = useState<DecryptedEntry[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [dataFetchError, setDataFetchError] = useState<string | null>(null);
+  const [isAddingNew, setIsAddingNew] = useState<boolean>(false);
+  const [newEntryForm, setNewEntryForm] = useState({
+    website: "",
+    username: "",
+    password: "",
+    notes: "",
+  });
 
-  console.log("Encryption key in Entries:", encryptionKey);
-
-  useEffect(() => {
-    if (!encryptionKey) {
-      console.log(
-        "Encryption key not found, redirecting to dashboard for unlock."
-      );
-      navigate("/dashboard");
-      return;
-    }
-
-    const fetchDataAndDecrypt = async () => {
-      try {
-        setLoading(true);
-        const data = await getDashboardData();
-        console.log("Raw encrypted data fetched: ", data);
-
-        setUser({ ...data.loggedInUser, data: data.entries });
-
-        const decrypted = await decryptAllEntries(data.entries, encryptionKey);
-        setDecryptedEntries(decrypted);
-      } catch (error) {
-        console.error(
-          "Error on fetching or decrypting data in Entries: ",
-          error
-        );
-        clearEncryptionKey();
-        navigate("/dashboard");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDataAndDecrypt();
-  }, [encryptionKey, navigate, clearEncryptionKey]);
+  const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
+  const [editedEntryForm, setEditedEntryForm] = useState<
+    Partial<DecryptedEntry>
+  >({});
 };
-
-const decryptAllEntries = useCallback(async (encryptedEntries: EncryptedEntry[], key: CryptoKey))

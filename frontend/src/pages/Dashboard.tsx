@@ -67,7 +67,7 @@ export const Dashboard: React.FunctionComponent = () => {
               <p className="font-bold text-lg mb-2">Critical Warning!</p>
               <p>
                 Your Master Password has not been set. You cannot access your
-                Credentials Vault without it. Please set it up to secure your
+                Credential Vault without it. Please set it up to secure your
                 data.{" "}
                 <a href="/set-master-password" className="font-bold underline">
                   Click here!

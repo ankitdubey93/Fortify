@@ -6,7 +6,6 @@ import Navbar from "./components/navbar";
 import { AnimatePresence } from "framer-motion";
 import { Dashboard } from "./pages/Dashboard";
 import SetMasterPasswordPage from "./pages/SetMasterPasswordPage";
-import { MasterPasswordProvider } from "./contexts/MasterPasswordProvider";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DashboardNavbar from "./components/DashboardNavbar";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -19,7 +18,7 @@ const AppRoutes = () => {
   const loggedInRoutes = [
     "/dashboard",
     "/credentials-vault",
-    "set-master-password",
+    "/set-master-password",
   ];
   const shouldShowDashboardNavbar = loggedInRoutes.some((route) =>
     location.pathname.startsWith(route)
@@ -70,13 +69,11 @@ const AppRoutes = () => {
 
 const App = () => {
   return (
-    <MasterPasswordProvider>
-      <AuthProvider>
-        <div className="min-h-screen bg-sky-300">
-          <AppRoutes />
-        </div>
-      </AuthProvider>
-    </MasterPasswordProvider>
+    <AuthProvider>
+      <div className="min-h-screen bg-sky-300">
+        <AppRoutes />
+      </div>
+    </AuthProvider>
   );
 };
 
