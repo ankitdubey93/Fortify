@@ -1,11 +1,16 @@
 import mongoose, { Document, mongo, Schema, Types } from "mongoose";
 
+interface EncryptedField {
+  cipherText: string;
+  iv: string;
+}
+
 export interface Entry extends mongoose.Types.Subdocument {
   _id: mongoose.Types.ObjectId;
-  website: string;
-  username: string;
-  password: string;
-  notes?: string;
+  website: EncryptedField;
+  username: EncryptedField;
+  password: EncryptedField;
+  notes?: EncryptedField;
 }
 
 export interface User extends Document {
@@ -18,12 +23,20 @@ export interface User extends Document {
   data: Types.DocumentArray<Entry>;
 }
 
+const encryptedFieldSchema = new Schema(
+  {
+    cipherText: { type: String, required: true },
+    iv: { type: String, required: true },
+  },
+  { _id: false }
+);
+
 const entrySchema = new Schema<Entry>(
   {
-    website: String,
-    username: String,
-    password: String,
-    notes: String,
+    website: encryptedFieldSchema,
+    username: encryptedFieldSchema,
+    password: encryptedFieldSchema,
+    notes: encryptedFieldSchema,
   },
   { _id: true }
 );

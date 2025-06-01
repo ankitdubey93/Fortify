@@ -6,10 +6,17 @@ export const MasterPasswordProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [encryptionKey, setEncryptionKey] = useState<CryptoKey | null>(null);
+  const [encryptionKey, setEncryptionKeyState] = useState<CryptoKey | null>(
+    null
+  );
+
+  const setEncryptionKey = (key: CryptoKey) => setEncryptionKeyState(key);
+  const clearEncryptionKey = () => setEncryptionKeyState(null);
 
   return (
-    <MasterPasswordContext.Provider value={{ encryptionKey, setEncryptionKey }}>
+    <MasterPasswordContext.Provider
+      value={{ encryptionKey, setEncryptionKey, clearEncryptionKey }}
+    >
       {children}
     </MasterPasswordContext.Provider>
   );

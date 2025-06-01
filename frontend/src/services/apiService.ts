@@ -168,6 +168,7 @@ export const refreshAccessToken = async () => {
 };
 
 export const addEntry = async (entryData: EncryptedEntryPayload) => {
+  console.log(entryData);
   const res = await fetchWithRefresh(`${API_URL_DASH}/`, {
     method: "POST",
     headers: {
