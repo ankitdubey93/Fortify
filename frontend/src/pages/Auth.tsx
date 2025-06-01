@@ -1,7 +1,13 @@
 import { useState } from "react";
-import { loginUser, registerUser } from "../services/apiService";
+import {
+  getDashboardData,
+  loginUser,
+  registerUser,
+  signOutUser,
+} from "../services/apiService";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useAuth } from "../hooks/useAuth";
 
 const Auth = () => {
   const [isSignIn, setIsSignIn] = useState(true);
@@ -13,6 +19,7 @@ const Auth = () => {
     confirmPassword: "",
   });
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -33,7 +40,21 @@ const Auth = () => {
           password: form.password,
         });
 
-        navigate("/dashboard");
+        const dashboardData = await getDashboardData();
+
+        if (dashboardData && dashboardData.loggedInUser) {
+          login({
+            name: dashboardData.loggedInUser.name,
+            _id: dashboardData.loggedInUser._id,
+            hasMasterPassword: dashboardData.hasMasterPassword,
+          });
+          navigate("/dashboard");
+        } else {
+          setError(
+            "Login successful, but user data is incomplete. Please try again."
+          );
+          await signOutUser();
+        }
       } else {
         await registerUser(form);
         navigate("/set-master-password");
