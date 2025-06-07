@@ -1,6 +1,7 @@
 import express from "express";
 import { authenticateToken, AuthRequest } from "../middleware/authMiddleware";
 import { User } from "../models/User";
+import VaultRouter from "./credentialVault";
 import { encrypt, decrypt } from "../utils/encryption";
 
 const dashboardRouter = express.Router();
@@ -51,7 +52,7 @@ dashboardRouter.get("/", async (req: AuthRequest, res: express.Response) => {
 
   try {
     const loggedInUser = await User.findById(req.user.userId).select(
-      "name username encryptionSalt"
+      "name username encryptionSalt _id"
     );
 
     if (!loggedInUser) {
@@ -62,14 +63,17 @@ dashboardRouter.get("/", async (req: AuthRequest, res: express.Response) => {
     }
 
     res.status(200).json({
-      message: `Welcome ${loggedInUser.name}`,
-      loggedInUser,
+      _id: loggedInUser._id,
+      name: loggedInUser.name,
+      username: loggedInUser.username,
       hasMasterPassword: !!loggedInUser.encryptionSalt,
     });
   } catch (error) {
     res.status(500).json({ message: "Internal server error." });
   }
 });
+
+dashboardRouter.use("/credential-vault", VaultRouter);
 
 dashboardRouter.post("/", async (req: AuthRequest, res: express.Response) => {
   if (!req.user) {
