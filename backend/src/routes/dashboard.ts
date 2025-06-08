@@ -52,7 +52,7 @@ dashboardRouter.get("/", async (req: AuthRequest, res: express.Response) => {
 
   try {
     const loggedInUser = await User.findById(req.user.userId).select(
-      "name username encryptionSalt _id"
+      "name username _id"
     );
 
     if (!loggedInUser) {
@@ -66,12 +66,39 @@ dashboardRouter.get("/", async (req: AuthRequest, res: express.Response) => {
       _id: loggedInUser._id,
       name: loggedInUser.name,
       username: loggedInUser.username,
-      hasMasterPassword: !!loggedInUser.encryptionSalt,
     });
   } catch (error) {
     res.status(500).json({ message: "Internal server error." });
   }
 });
+
+dashboardRouter.get(
+  "/master-password-status",
+  async (req: AuthRequest, res: express.Response) => {
+    if (!req.user) {
+      throw new Error("Not authorized.");
+    }
+
+    try {
+      const loggedInUser = await User.findById(req.user.userId).select(
+        "encryptionSalt"
+      );
+
+      if (!loggedInUser) {
+        res
+          .status(404)
+          .json({ message: "User session expired. Please login again." });
+        return;
+      }
+
+      res.status(200).json({
+        hasMasterPassword: !!loggedInUser.encryptionSalt,
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
+);
 
 dashboardRouter.use("/credential-vault", VaultRouter);
 
