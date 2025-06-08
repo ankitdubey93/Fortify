@@ -129,6 +129,27 @@ export const getDashboardData = async () => {
   return await response.json();
 };
 
+export const getMasterPasswordStatus = async () => {
+  const response = await fetchWithRefresh(
+    `${API_URL_DASH}/master-password-status`,
+    {
+      method: "GET",
+      credentials: "include",
+    }
+  );
+
+  if (response.status === 401) {
+    throw new Error("Unauthorized.");
+  }
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    return errorData;
+  }
+
+  return await response.json();
+};
+
 export const deleteEntry = async (entryId: string) => {
   const res = await fetchWithRefresh(`${API_URL_DASH}/${entryId}`, {
     method: "DELETE",

@@ -10,7 +10,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [user, setUser] = useState<{
     name: string;
     _id: string;
-    hasMasterPassword: boolean;
+    username: string;
   } | null>(null);
   const [isLoadingAuth, setIsLoadingAuth] = useState<boolean>(true); // New loading state for auth check
 
@@ -22,12 +22,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     const checkAuthStatus = async () => {
       try {
         const data = await getDashboardData(); // This call will send the cookie automatically
-        if (data && data.loggedInUser) {
+        if (data && data.user) {
           // If data comes back, user is logged in
           setUser({
-            name: data.loggedInUser.name,
-            _id: data.loggedInUser._id,
-            hasMasterPassword: data.hasMasterPassword, // Access from top-level
+            name: data.user.name,
+            _id: data.user._id,
+            username: data.user.username, // Access from top-level
           });
           setIsLoggedIn(true);
         } else {
@@ -48,11 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     checkAuthStatus();
   }, []); // Run only once on mount
 
-  const login = (userData: {
-    name: string;
-    _id: string;
-    hasMasterPassword: boolean;
-  }) => {
+  const login = (userData: { name: string; _id: string; username: string }) => {
     setIsLoggedIn(true);
     setUser(userData);
   };

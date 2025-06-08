@@ -1,10 +1,5 @@
 import { useState } from "react";
-import {
-  getDashboardData,
-  loginUser,
-  registerUser,
-  signOutUser,
-} from "../services/apiService";
+import { loginUser, registerUser, signOutUser } from "../services/apiService";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "../hooks/useAuth";
@@ -35,18 +30,16 @@ const Auth = () => {
 
     try {
       if (isSignIn) {
-        await loginUser({
+        const response = await loginUser({
           username: form.username,
           password: form.password,
         });
 
-        const dashboardData = await getDashboardData();
-
-        if (dashboardData && dashboardData.loggedInUser) {
+        if (response && response.user) {
           login({
-            name: dashboardData.loggedInUser.name,
-            _id: dashboardData.loggedInUser._id,
-            hasMasterPassword: dashboardData.hasMasterPassword,
+            name: response.user.name,
+            _id: response.user._id,
+            username: response.user.username,
           });
           navigate("/dashboard");
         } else {
