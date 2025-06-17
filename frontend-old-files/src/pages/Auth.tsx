@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { loginUser, registerUser } from "../services/apiService";
+import { loginUser, registerUser, signOutUser } from "../services/apiService";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useAuth } from "../hooks/useAuth";
 
 const Auth = () => {
   const [isSignIn, setIsSignIn] = useState(true);
@@ -13,6 +14,7 @@ const Auth = () => {
     confirmPassword: "",
   });
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -28,19 +30,35 @@ const Auth = () => {
 
     try {
       if (isSignIn) {
-        await loginUser({
+        const response = await loginUser({
           username: form.username,
           password: form.password,
         });
 
-        navigate("/dashboard");
+        if (response && response.user) {
+          login({
+            name: response.user.name,
+            _id: response.user._id,
+            username: response.user.username,
+          });
+          navigate("/dashboard");
+        } else {
+          setError(
+            "Login successful, but user data is incomplete. Please try again."
+          );
+          await signOutUser();
+        }
       } else {
         await registerUser(form);
         navigate("/set-master-password");
       }
     } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
       console.error(error);
-      alert("Something went wrong.");
     }
   };
 

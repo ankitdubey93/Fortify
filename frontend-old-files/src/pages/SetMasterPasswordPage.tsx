@@ -1,0 +1,106 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useMasterPassword } from "../contexts/useMasterPassword";
+import { generateSalt, bufferToBase64 } from "../utils/cryptoUtils";
+import { deriveKey } from "../utils/crypto/deriveKey";
+import { getDashboardData, storeVaultSalt } from "../services/apiService";
+
+const SetMasterPasswordPage = () => {
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const [method, setMethod] = useState<"pbkdf2" | "argon2id">("pbkdf2");
+  const [loading, setLoading] = useState(true);
+  const { setEncryptionKey } = useMasterPassword();
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkMasterPassword = async () => {
+      try {
+        const userData = await getDashboardData();
+        if (userData.hasMasterPassword) {
+          navigate("/dashboard");
+        } else {
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error("Error fetching user data", error);
+        navigate("/auth");
+      }
+    };
+
+    checkMasterPassword();
+  }, [navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    try {
+      const salt = generateSalt();
+      const key = await deriveKey(password, salt, method);
+      setEncryptionKey(key);
+
+      const encodedSalt = bufferToBase64(salt);
+      await storeVaultSalt(encodedSalt, method);
+
+      navigate("/dashboard");
+    } catch (error) {
+      console.error(error);
+      setError("Failed to set master password.");
+    }
+  };
+
+  if (loading) return <div>Loading......</div>;
+
+  return (
+    <div className="flex justify-center mt-24">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white p-8 rounded shadow-md w-full max-w-md space-y-4"
+      >
+        <h2 className="text-2xl font-semibold text-center">
+          Set Master Password
+        </h2>
+        {error && <p className="text-red-600 text-sm text-center">{error}</p>}
+        <input
+          type="password"
+          placeholder="Master Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full border rounded p-2"
+          required
+        />
+        <input
+          type="password"
+          placeholder="Confirm Master Password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          className="w-full border rounded p-2"
+          required
+        />
+        <select
+          value={method}
+          onChange={(e) => setMethod(e.target.value as "pbkdf2" | "argon2id")}
+          className="w-full border rounded p-2"
+        >
+          <option value="pbkdf2">PBKDF2</option>
+          <option value="argon2id">Argon2id</option>
+        </select>
+        <button
+          type="submit"
+          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+        >
+          Set Password
+        </button>
+      </form>
+    </div>
+  );
+};
+
+export default SetMasterPasswordPage;

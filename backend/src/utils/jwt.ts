@@ -10,12 +10,12 @@ if (!ACCESS_TOKEN_SECRET || !REFRESH_TOKEN_SECRET) {
 
 export const generateAccessToken = (userId: string) => {
   return jwt.sign({ userId }, ACCESS_TOKEN_SECRET, {
-    expiresIn: "15m",
+    expiresIn: "2m",
   });
 };
 
 export const generateRefreshToken = (userId: string) => {
-  return jwt.sign({ userId }, REFRESH_TOKEN_SECRET, { expiresIn: "7d" });
+  return jwt.sign({ userId }, REFRESH_TOKEN_SECRET, { expiresIn: "5m" });
 };
 
 export const verifyAccessToken = (token: string) => {

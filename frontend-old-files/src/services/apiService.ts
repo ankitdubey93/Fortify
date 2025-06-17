@@ -4,12 +4,28 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 const API_URL_AUTH = `${BASE_URL}/auth`;
 const API_URL_DASH = `${BASE_URL}/dashboard`;
 
+// Decrypted (frontend display) - This interface is primarily for frontend logic convenience
+// and not directly used in API calls to send data to backend.
 interface Entry {
   _id: string;
   website: string;
   username: string;
   password: string;
   notes?: string;
+}
+
+// Encrypted data structure for fields - This is what will be sent to/from backend
+interface EncryptedData {
+  cipherText: string;
+  iv: string;
+}
+
+// Payload for adding a new entry (all fields are encrypted)
+export interface EncryptedEntryPayload {
+  website: EncryptedData;
+  username: EncryptedData;
+  password: EncryptedData;
+  notes?: EncryptedData;
 }
 
 export const registerUser = async (data: {
@@ -36,32 +52,28 @@ export const registerUser = async (data: {
   return await response.json();
 };
 
-// export const submitVaultSalt = async (masterPassword: string) => {
-//   const salt = crypto.getRandomValues(new Uint8Array(16));
+export const storeVaultSalt = async (
+  vaultSaltBase64: string,
+  method: string
+) => {
+  const response = await fetch(`${API_URL_DASH}/set-master-password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify({
+      encryptionSalt: vaultSaltBase64,
+      keyDerivationMethod: method,
+    }),
+  });
 
-//   await argon2.hash({
-//     pass: masterPassword,
-//     salt,
-//     type: argon2.ArgonType.Argon2id,
-//   });
+  if (!response.ok) {
+    throw new Error("Failed to store vault salt.");
+  }
 
-//   const encodedSalt = btoa(String.fromCharCode(...salt));
-
-//   const response = await fetch(`${API_URL_DASH}/set-master-password`, {
-//     method: "POST",
-//     headers: {
-//       "Content-Type": "application/json",
-//     },
-//     credentials: "include",
-//     body: JSON.stringify({ vaultSalt: encodedSalt }),
-//   });
-
-//   if (!response.ok) {
-//     throw new Error("Failed to store vault salt.");
-//   }
-
-//   return await response.json();
-// };
+  return await response.json();
+};
 
 export const loginUser = async (credentials: {
   username: string;
@@ -79,10 +91,12 @@ export const loginUser = async (credentials: {
   });
 
   if (!response.ok) {
-    throw new Error("Login Failed");
+    const errorData = await response.json();
+
+    throw new Error(errorData.message || "Failed to sign in.");
   }
 
-  await response.json();
+  return await response.json();
 };
 
 export const signOutUser = async () => {
@@ -110,6 +124,27 @@ export const getDashboardData = async () => {
 
   if (!response.ok) {
     throw new Error("Failed to fetch dashboard data.");
+  }
+
+  return await response.json();
+};
+
+export const getMasterPasswordStatus = async () => {
+  const response = await fetchWithRefresh(
+    `${API_URL_DASH}/master-password-status`,
+    {
+      method: "GET",
+      credentials: "include",
+    }
+  );
+
+  if (response.status === 401) {
+    throw new Error("Unauthorized.");
+  }
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    return errorData;
   }
 
   return await response.json();
@@ -157,7 +192,8 @@ export const refreshAccessToken = async () => {
   return await res.json();
 };
 
-export const addEntry = async (entryData: Partial<Entry>) => {
+export const addEntry = async (entryData: EncryptedEntryPayload) => {
+  console.log(entryData);
   const res = await fetchWithRefresh(`${API_URL_DASH}/`, {
     method: "POST",
     headers: {

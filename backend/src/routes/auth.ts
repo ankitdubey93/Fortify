@@ -120,7 +120,8 @@ router.post("/signin", async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ message: "fdgd" });
+    console.error("Sign in error: ", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
