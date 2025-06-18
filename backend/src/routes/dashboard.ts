@@ -2,7 +2,6 @@ import express from "express";
 import { authenticateToken, AuthRequest } from "../middleware/authMiddleware";
 import { User } from "../models/User";
 import VaultRouter from "./credentialVault";
-import { encrypt, decrypt } from "../utils/encryption";
 
 const dashboardRouter = express.Router();
 

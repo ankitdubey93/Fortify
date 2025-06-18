@@ -1,10 +1,65 @@
 import React, { useState } from "react";
+import { signin, signup } from "../services/authServices";
+import { useAuth } from "../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Home: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [formData, setFormData] = useState({
+    name: "",
+    username: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const { setIsLoggedIn, setUser } = useAuth();
+  const navigate = useNavigate();
 
   const toggleMode = () => {
     setIsLogin((prev) => !prev);
+    setFormData({ name: "", username: "", password: "", confirmPassword: "" });
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isLogin && formData.password !== formData.confirmPassword) {
+      alert("Passwords do not match!.");
+      return;
+    }
+
+    try {
+      if (isLogin) {
+        const response = await signin(formData.username, formData.password);
+        if (response.ok) {
+          setIsLoggedIn(true);
+          setUser(response.user);
+
+          setTimeout(() => {
+            navigate("/dashboard");
+          }, 0);
+        } else {
+          alert(response.message || "Login Failed");
+        }
+      } else {
+        const response = await signup(
+          formData.name,
+          formData.username,
+          formData.password
+        );
+        if (response && response.user) {
+          setIsLoggedIn(true);
+          setUser(response.user);
+          navigate("/set-master-password");
+        } else {
+          alert(response.message || "Signup Failed");
+        }
+      }
+    } catch (error) {
+      console.error("Auth error:", error);
+    }
   };
 
   return (
@@ -24,12 +79,14 @@ const Home: React.FC = () => {
           <h2 className="text-2xl font-bold text-center text-sky-800 mb-6">
             {isLogin ? "Login" : "Register"}
           </h2>
-          <form className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
               <input
                 type="text"
                 name="name"
                 placeholder="Name"
+                onChange={handleChange}
+                value={formData.name}
                 className="w-full px-4 py-2 border rounded focus:outline-none focus:ring focus:border-sky-500"
                 required
               />
@@ -38,6 +95,8 @@ const Home: React.FC = () => {
               type="text"
               name="username"
               placeholder="Username"
+              onChange={handleChange}
+              value={formData.username}
               className="w-full px-4 py-2 border rounded focus:outline-none focus:ring focus:border-sky-500"
               required
             />
@@ -45,6 +104,8 @@ const Home: React.FC = () => {
               type="password"
               name="password"
               placeholder="Password"
+              onChange={handleChange}
+              value={formData.password}
               className="w-full px-4 py-2 border rounded focus:outline-none focus:ring focus:border-sky-500"
               required
             />
@@ -53,6 +114,8 @@ const Home: React.FC = () => {
                 type="password"
                 name="confirmPassword"
                 placeholder="Confirm Password"
+                onChange={handleChange}
+                value={formData.confirmPassword}
                 className="w-full px-4 py-2 border rounded focus:outline-none focus:ring focus:border-sky-500"
                 required
               />

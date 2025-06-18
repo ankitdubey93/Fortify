@@ -8,6 +8,8 @@ import { RefreshToken } from "../models/RefreshToken";
 
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt";
 
+import { authenticateToken } from "../middleware/authMiddleware";
+
 import jwt from "jsonwebtoken";
 
 const router = Router();
@@ -122,6 +124,34 @@ router.post("/signin", async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Sign in error: ", error);
     res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+router.get("/check", authenticateToken, async (req: Request, res: Response) => {
+  const accessToken = req.cookies?.accessToken;
+  if (!accessToken) {
+    res.status(401).json({ message: "Not authenticated." });
+    return;
+  }
+
+  try {
+    const payload = jwt.verify(
+      accessToken,
+      process.env.ACCESS_TOKEN_SECRET as string
+    ) as { userId: string };
+
+    const user = await User.findById(payload.userId).select(
+      "name username _id"
+    );
+
+    if (!user) {
+      res.status(404).json({ message: "User not found." });
+      return;
+    }
+
+    res.status(200).json({ user });
+  } catch (error) {
+    res.status(403).json({ message: "Invalid or expired token." });
   }
 });
 
