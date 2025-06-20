@@ -1,3 +1,5 @@
+import { fetchWithAutoRefresh } from "./fetchWithAutoRefresh";
+
 const API_BASE_AUTH = "http://localhost:3000/api/auth";
 
 export const signup = async (
@@ -49,7 +51,7 @@ export const signout = async () => {
 };
 
 export const getCurrentUser = async () => {
-  const response = await fetch(`${API_BASE_AUTH}/check`, {
+  const response = await fetchWithAutoRefresh(`${API_BASE_AUTH}/check`, {
     method: "GET",
     credentials: "include",
   });

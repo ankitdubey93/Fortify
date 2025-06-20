@@ -106,6 +106,12 @@ router.post("/signin", async (req: Request, res: Response) => {
     const accessToken = generateAccessToken(validUser._id.toString());
     const refreshToken = generateRefreshToken(validUser._id.toString());
 
+    const decoded = jwt.decode(accessToken) as { iat: number; exp: number };
+    console.log("🔐 Access token generated");
+    console.log("Issued at:   ", new Date(decoded.iat * 1000).toISOString());
+    console.log("Expires at:  ", new Date(decoded.exp * 1000).toISOString());
+    console.log("Current time:", new Date().toISOString());
+
     await new RefreshToken({
       userId: validUser._id,
       token: refreshToken,
