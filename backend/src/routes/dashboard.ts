@@ -11,6 +11,7 @@ dashboardRouter.post(
   "/set-master-password",
   async (req: AuthRequest, res: express.Response) => {
     const userId = req.user?.userId;
+    console.log(userId);
     const { encryptionSalt, keyDerivationMethod } = req.body;
 
     if (!encryptionSalt || !keyDerivationMethod) {
