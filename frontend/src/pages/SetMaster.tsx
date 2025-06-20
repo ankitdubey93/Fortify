@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { bufferToBase64, generateSalt } from "../utils/cryptoUtils";
 import { deriveKey } from "../utils/deriveKey";
 import { sendMasterPassword } from "../services/dashService";
+import { getMasterPasswordStatus } from "../services/dashService";
 
 const SetMaster: React.FC = () => {
   const [masterPassword, setMasterPassword] = useState<string>("");
@@ -12,6 +13,21 @@ const SetMaster: React.FC = () => {
   const [method, setMethod] = useState<"pbkdf2" | "argon2id">("pbkdf2");
   const [error, setError] = useState<string>("");
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkMasterPasswordStatus = async () => {
+      try {
+        const data = await getMasterPasswordStatus();
+        if (data.hasMasterPassword) {
+          navigate("/dashboard");
+        }
+      } catch (error: unknown) {
+        console.error("Error checking master password status:", error);
+      }
+    };
+
+    checkMasterPasswordStatus();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

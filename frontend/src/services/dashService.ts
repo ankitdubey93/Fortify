@@ -20,3 +20,16 @@ export const sendMasterPassword = async (
 
   return response.json();
 };
+
+export const getMasterPasswordStatus = async () => {
+  const response = await fetch(`${API_BASE_DASH}/master-password-status`, {
+    method: "GET",
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch master password status.");
+  }
+
+  return response.json();
+};
