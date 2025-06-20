@@ -33,3 +33,11 @@ export const getMasterPasswordStatus = async () => {
 
   return response.json();
 };
+
+export const getEncryptionSalt = async () => {
+  const response = await fetch(`${API_BASE_DASH}/salt`, {
+    credentials: "include",
+  });
+
+  return await response.json();
+};

@@ -142,6 +142,36 @@ dashboardRouter.post("/", async (req: AuthRequest, res: express.Response) => {
   }
 });
 
+dashboardRouter.get(
+  "/salt",
+  async (req: AuthRequest, res: express.Response) => {
+    console.log("route hit");
+    if (!req.user) {
+      throw new Error("Not Authorized.");
+    }
+
+    try {
+      const loggedInUser = await User.findById(req.user.userId).select(
+        "encryptionSalt keyDerivationMethod"
+      );
+
+      if (!loggedInUser) {
+        res.status(404).json({ message: "User not found." });
+        return;
+      }
+
+      res
+        .status(200)
+        .json({
+          encryptionSalt: loggedInUser.encryptionSalt,
+          keyDerivationMethod: loggedInUser.keyDerivationMethod,
+        });
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error." });
+    }
+  }
+);
+
 // dashboardRouter.put(
 //   "/:entryId",
 //   async (req: AuthRequest, res: express.Response) => {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getMasterPasswordStatus } from "../services/dashService";
+import { getMasterPasswordStatus } from "../services/dashServices";
 
 export const useMasterPasswordStatus = () => {
   const [hasMasterPassword, setHasMasterPassword] = useState<boolean | null>(

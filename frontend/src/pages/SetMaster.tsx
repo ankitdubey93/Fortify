@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { bufferToBase64, generateSalt } from "../utils/cryptoUtils";
 import { deriveKey } from "../utils/deriveKey";
-import { sendMasterPassword } from "../services/dashService";
+import { sendMasterPassword } from "../services/dashServices";
 
 import { useRedirectIfMasterPasswordExists } from "../hooks/useRedirectIfMasterPasswordExists";
 

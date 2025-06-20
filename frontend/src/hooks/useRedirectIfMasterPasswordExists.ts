@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getMasterPasswordStatus } from "../services/dashService";
+import { getMasterPasswordStatus } from "../services/dashServices";
 
 export const useRedirectIfMasterPasswordExists = () => {
   const navigate = useNavigate();

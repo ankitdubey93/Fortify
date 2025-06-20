@@ -6,26 +6,25 @@ const VaultRouter = express.Router();
 
 VaultRouter.use(authenticateToken);
 
-VaultRouter.get("/", async (req: AuthRequest, res: Response) => {
+VaultRouter.get("/", async (req: AuthRequest, res: express.Response) => {
   if (!req.user) {
-    throw new Error("Unauthorized.");
+    res.status(401).json({ message: "Unauthorized" });
+    return;
   }
 
   try {
-    const user = await User.findById(req.user.userId).select("encryptionSalt");
+    const user = await User.findById(req.user.userId).select("data");
 
     if (!user) {
-      res
-        .status(404)
-        .json({ message: "User session expired. Please login again." });
+      res.status(404).json({ message: "User not found." });
       return;
     }
 
-    res.status(201).json({
-      encryptionSalt: user.encryptionSalt,
-    });
+    // Send the encrypted data entries directly
+    res.status(200).json({ data: user.data });
   } catch (error) {
-    res.status(500).json({ message: "Internal server error." });
+    console.error("Error fetching credential vault:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 
