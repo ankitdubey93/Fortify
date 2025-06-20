@@ -1,27 +1,16 @@
 import { signout } from "../services/authServices";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { getMasterPasswordStatus } from "../services/dashService";
+
+import { useMasterPasswordStatus } from "../hooks/useMasterPasswordStatus";
 
 const Dashboard: React.FC = () => {
   const { user, setUser, setIsLoggedIn } = useAuth();
-  const [hasMasterPassword, setHasMasterPassword] = useState<boolean | null>(
-    null
-  );
+  // const [hasMasterPassword, setHasMasterPassword] = useState<boolean | null>(
+  //   null
+  // );
+  const { hasMasterPassword, loading } = useMasterPasswordStatus();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const checkMasterPasswordStatus = async () => {
-      try {
-        const data = await getMasterPasswordStatus();
-        setHasMasterPassword(data.hasMasterPassword);
-      } catch (error: unknown) {
-        console.error("Error checking master password status:", error);
-      }
-    };
-    checkMasterPasswordStatus();
-  });
 
   const handleSignout = async () => {
     try {
@@ -34,6 +23,8 @@ const Dashboard: React.FC = () => {
       alert("Failed to sign out. Try again.");
     }
   };
+
+  if (loading) return null;
 
   return (
     <div>
