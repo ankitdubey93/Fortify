@@ -2,8 +2,11 @@ import React, { useState } from "react";
 import { signin, signup } from "../services/authServices";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { useRedirectIfLoggedIn } from "../hooks/useRedirectIfLoggedIn";
 
 const Home: React.FC = () => {
+  useRedirectIfLoggedIn();
+
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     name: "",
