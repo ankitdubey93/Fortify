@@ -1,4 +1,4 @@
-const API_BASE_DASH = "http://localhost:3000/api/dashboard";
+const API_BASE_DASH = `${import.meta.env.VITE_API_BASE_URL}/dashboard`;
 
 export const sendMasterPassword = async (
   encryptionSalt: string,

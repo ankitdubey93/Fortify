@@ -1,6 +1,6 @@
 import { fetchWithAutoRefresh } from "./fetchWithAutoRefresh";
 
-const API_BASE_AUTH = "http://localhost:3000/api/auth";
+const API_BASE_AUTH = `${import.meta.env.VITE_API_BASE_URL}/auth`;
 
 export const signup = async (
   name: string,
