@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 
-import { base64ToBuffer, decryptData } from "../utils/cryptoUtils";
+import { base64ToBuffer, decryptData, encryptData } from "../utils/cryptoUtils";
 import { getEncryptionSalt } from "../services/dashServices";
 import { deriveKey } from "../utils/deriveKey";
-import { getEncryptedVault } from "../services/vaultservices";
+import { addEntry, getEncryptedVault } from "../services/vaultservices";
 
 const CredentialVault: React.FC = () => {
   const [masterPassword, setMasterPassword] = useState("");
@@ -11,6 +11,15 @@ const CredentialVault: React.FC = () => {
   const [credentials, setCredentials] = useState<any[]>([]);
   const [error, setError] = useState("");
 
+  const [showAddForm, setShowAddForm] = useState<boolean>(false);
+  const [newEntry, setNewEntry] = useState({
+    website: "",
+    username: "",
+    password: "",
+    notes: "",
+  });
+
+  const [key, setKey] = useState<CryptoKey | null>(null);
   // Fetch encryption salt on mount
 
   const handleUnlock = async () => {
@@ -42,41 +51,41 @@ const CredentialVault: React.FC = () => {
         throw new Error("Master password verification failed.");
       }
 
-      // console.log(key);
-      // const encrypted = await getEncryptedVault(); // returns { data: [ { website, username, ciphertext, iv } ] }
+      const encrypted = await getEncryptedVault();
 
-      // const decrypted = await Promise.all(
-      //   encrypted.data.map(async (entry: any) => {
-      //     const decryptedWebsite = await decryptData(
-      //       entry.website.cipherText,
-      //       entry.website.iv,
-      //       key
-      //     );
-      //     const decryptedUsername = await decryptData(
-      //       entry.username.cipherText,
-      //       entry.username.iv,
-      //       key
-      //     );
-      //     const decryptedPassword = await decryptData(
-      //       entry.password.cipherText,
-      //       entry.password.iv,
-      //       key
-      //     );
-      //     const decryptedNotes = entry.notes
-      //       ? await decryptData(entry.notes.cipherText, entry.notes.iv, key)
-      //       : "";
+      const decrypted = await Promise.all(
+        encrypted.data.map(async (entry: any) => {
+          const decryptedWebsite = await decryptData(
+            entry.website.cipherText,
+            entry.website.iv,
+            key
+          );
+          const decryptedUsername = await decryptData(
+            entry.username.cipherText,
+            entry.username.iv,
+            key
+          );
+          const decryptedPassword = await decryptData(
+            entry.password.cipherText,
+            entry.password.iv,
+            key
+          );
+          const decryptedNotes = entry.notes
+            ? await decryptData(entry.notes.cipherText, entry.notes.iv, key)
+            : "";
 
-      //     return {
-      //       ...entry,
-      //       decryptedWebsite,
-      //       decryptedUsername,
-      //       decryptedPassword,
-      //       decryptedNotes,
-      //     };
-      //   })
-      // );
+          return {
+            ...entry,
+            decryptedWebsite,
+            decryptedUsername,
+            decryptedPassword,
+            decryptedNotes,
+          };
+        })
+      );
 
-      // setCredentials(decrypted);
+      setKey(key);
+      setCredentials(decrypted);
       setVaultUnlocked(true);
     } catch (error) {
       console.error(error);
@@ -105,32 +114,140 @@ const CredentialVault: React.FC = () => {
     );
   }
 
+  const handleAddEntry = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!key) return;
+
+    try {
+      const website = await encryptData(newEntry.website, key);
+      const username = await encryptData(newEntry.username, key);
+      const password = await encryptData(newEntry.password, key);
+      const notes = newEntry.notes
+        ? await encryptData(newEntry.notes, key)
+        : null;
+
+      await addEntry({
+        website,
+        username,
+        password,
+        notes,
+      });
+
+      setShowAddForm(false);
+      setNewEntry({ website: "", username: "", password: "", notes: "" });
+      handleUnlock(); // refresh entries
+    } catch (err) {
+      console.error("Add entry failed", err);
+      setError("Failed to add entry.");
+    }
+  };
+
   return (
-    <div className="max-w-3xl mx-auto mt-10">
-      <h2 className="text-2xl font-bold mb-4 text-sky-800">Your Credentials</h2>
-      {credentials.length === 0 ? (
-        <p className="text-gray-600">No entries found.</p>
-      ) : (
-        <ul className="space-y-4">
-          {credentials.map((cred, idx) => (
-            <li key={idx} className="bg-white shadow p-4 rounded-md">
-              <p>
-                <strong>Website:</strong> {cred.website}
-              </p>
-              <p>
-                <strong>Username:</strong> {cred.username}
-              </p>
-              <p>
-                <strong>Password:</strong> {cred.decryptedPassword}
-              </p>
-              {cred.notes && (
-                <p>
-                  <strong>Notes:</strong> {cred.notes}
-                </p>
-              )}
-            </li>
-          ))}
-        </ul>
+    <div className="max-w-5xl mx-auto mt-10">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold text-sky-800">Your Credentials</h2>
+        <button
+          onClick={() => setShowAddForm(true)}
+          className="bg-sky-700 text-white px-4 py-2 rounded hover:bg-sky-800"
+        >
+          + Add Entry
+        </button>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full table-auto border-collapse bg-white shadow rounded-md">
+          <thead>
+            <tr className="bg-sky-100 text-sky-800 font-semibold">
+              <th className="px-4 py-2 border">Website</th>
+              <th className="px-4 py-2 border">Username</th>
+              <th className="px-4 py-2 border">Password</th>
+              <th className="px-4 py-2 border">Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {credentials.length === 0 ? (
+              <tr>
+                <td colSpan={4} className="text-center py-6 text-gray-600">
+                  No entries found.
+                </td>
+              </tr>
+            ) : (
+              credentials.map((cred, idx) => (
+                <tr key={idx} className="hover:bg-gray-50">
+                  <td className="border px-4 py-2">{cred.decryptedWebsite}</td>
+                  <td className="border px-4 py-2">{cred.decryptedUsername}</td>
+                  <td className="border px-4 py-2">{cred.decryptedPassword}</td>
+                  <td className="border px-4 py-2">{cred.decryptedNotes}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {showAddForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
+            <h3 className="text-xl font-bold mb-4 text-sky-700">
+              Add New Entry
+            </h3>
+            <form className="space-y-4" onSubmit={handleAddEntry}>
+              <input
+                type="text"
+                placeholder="Website"
+                value={newEntry.website}
+                onChange={(e) =>
+                  setNewEntry({ ...newEntry, website: e.target.value })
+                }
+                required
+                className="w-full border p-2 rounded"
+              />
+              <input
+                type="text"
+                placeholder="Username"
+                value={newEntry.username}
+                onChange={(e) =>
+                  setNewEntry({ ...newEntry, username: e.target.value })
+                }
+                required
+                className="w-full border p-2 rounded"
+              />
+              <input
+                type="text"
+                placeholder="Password"
+                value={newEntry.password}
+                onChange={(e) =>
+                  setNewEntry({ ...newEntry, password: e.target.value })
+                }
+                required
+                className="w-full border p-2 rounded"
+              />
+              <textarea
+                placeholder="Notes (optional)"
+                value={newEntry.notes}
+                onChange={(e) =>
+                  setNewEntry({ ...newEntry, notes: e.target.value })
+                }
+                className="w-full border p-2 rounded"
+              />
+              <div className="flex justify-between items-center mt-4">
+                <button
+                  type="submit"
+                  className="bg-sky-700 text-white px-4 py-2 rounded hover:bg-sky-800"
+                >
+                  Save Entry
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowAddForm(false)}
+                  className="text-red-600 hover:underline"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );
