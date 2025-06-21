@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 import { base64ToBuffer, decryptData } from "../utils/cryptoUtils";
 import { getEncryptionSalt } from "../services/dashServices";
@@ -6,8 +6,6 @@ import { deriveKey } from "../utils/deriveKey";
 import { getEncryptedVault } from "../services/vaultservices";
 
 const CredentialVault: React.FC = () => {
-  const [salt, setSalt] = useState<string | null>(null);
-  const [method, setMethod] = useState<"pbkdf2" | "argon2id">("pbkdf2");
   const [masterPassword, setMasterPassword] = useState("");
   const [vaultUnlocked, setVaultUnlocked] = useState(false);
   const [credentials, setCredentials] = useState<any[]>([]);
@@ -15,63 +13,70 @@ const CredentialVault: React.FC = () => {
 
   // Fetch encryption salt on mount
 
-  useEffect(() => {
-    const fetchSalt = async () => {
-      try {
-        const response = await getEncryptionSalt();
-        console.log(response);
-        setSalt(response.encryptionSalt);
-        setMethod(response.keyDerivationMethod);
-      } catch (error: unknown) {
-        setError("Failed to fetch encryption salt. Please try again.");
-      }
-    };
-    fetchSalt();
-  }, []);
-
   const handleUnlock = async () => {
     setError("");
 
     try {
-      if (!salt || !method) throw new Error("Salt/Method not loaded");
+      const response = await getEncryptionSalt();
+      const { encryptionSalt, keyDerivationMethod, verification } = response;
 
-      const key = await deriveKey(masterPassword, base64ToBuffer(salt), method);
+      if (!encryptionSalt || !keyDerivationMethod || !verification) {
+        throw new Error("Missing required encryption data from server.");
+      }
 
-      console.log(key);
-      const encrypted = await getEncryptedVault(); // returns { data: [ { website, username, ciphertext, iv } ] }
-
-      const decrypted = await Promise.all(
-        encrypted.data.map(async (entry: any) => {
-          const decryptedWebsite = await decryptData(
-            entry.website.cipherText,
-            entry.website.iv,
-            key
-          );
-          const decryptedUsername = await decryptData(
-            entry.username.cipherText,
-            entry.username.iv,
-            key
-          );
-          const decryptedPassword = await decryptData(
-            entry.password.cipherText,
-            entry.password.iv,
-            key
-          );
-          const decryptedNotes = entry.notes
-            ? await decryptData(entry.notes.cipherText, entry.notes.iv, key)
-            : "";
-
-          return {
-            ...entry,
-            decryptedWebsite,
-            decryptedUsername,
-            decryptedPassword,
-            decryptedNotes,
-          };
-        })
+      const key = await deriveKey(
+        masterPassword,
+        base64ToBuffer(encryptionSalt),
+        keyDerivationMethod
       );
 
-      setCredentials(decrypted);
+      const check = await decryptData(
+        verification.cipherText,
+        verification.iv,
+        key
+      );
+
+      const verificationText = import.meta.env.VITE_VERIFICATION_TEXT;
+
+      if (check !== verificationText) {
+        throw new Error("Master password verification failed.");
+      }
+
+      // console.log(key);
+      // const encrypted = await getEncryptedVault(); // returns { data: [ { website, username, ciphertext, iv } ] }
+
+      // const decrypted = await Promise.all(
+      //   encrypted.data.map(async (entry: any) => {
+      //     const decryptedWebsite = await decryptData(
+      //       entry.website.cipherText,
+      //       entry.website.iv,
+      //       key
+      //     );
+      //     const decryptedUsername = await decryptData(
+      //       entry.username.cipherText,
+      //       entry.username.iv,
+      //       key
+      //     );
+      //     const decryptedPassword = await decryptData(
+      //       entry.password.cipherText,
+      //       entry.password.iv,
+      //       key
+      //     );
+      //     const decryptedNotes = entry.notes
+      //       ? await decryptData(entry.notes.cipherText, entry.notes.iv, key)
+      //       : "";
+
+      //     return {
+      //       ...entry,
+      //       decryptedWebsite,
+      //       decryptedUsername,
+      //       decryptedPassword,
+      //       decryptedNotes,
+      //     };
+      //   })
+      // );
+
+      // setCredentials(decrypted);
       setVaultUnlocked(true);
     } catch (error) {
       console.error(error);

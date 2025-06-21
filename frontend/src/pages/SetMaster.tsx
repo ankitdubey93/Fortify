@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { bufferToBase64, generateSalt } from "../utils/cryptoUtils";
+import {
+  bufferToBase64,
+  encryptData,
+  generateSalt,
+} from "../utils/cryptoUtils";
 import { deriveKey } from "../utils/deriveKey";
 import { sendMasterPassword } from "../services/dashServices";
 
@@ -28,10 +32,14 @@ const SetMaster: React.FC = () => {
 
     try {
       const salt = generateSalt();
-      await deriveKey(masterPassword, salt, method);
+      const key = await deriveKey(masterPassword, salt, method);
+
+      const verificationText = import.meta.env.VITE_VERIFICATION_TEXT;
+
+      const { cipherText, iv } = await encryptData(verificationText, key);
 
       const encodedSalt = bufferToBase64(salt);
-      await sendMasterPassword(encodedSalt, method);
+      await sendMasterPassword(encodedSalt, method, { cipherText, iv });
 
       navigate("/dashboard");
     } catch (error: unknown) {

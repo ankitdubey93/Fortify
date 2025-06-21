@@ -42,7 +42,7 @@ import { connectDB } from "./db/connect";
 
 import authRouter from "./routes/auth";
 
-import dashboardRouter from "./routes/dashboard";
+import authenticatedRouter from "./routes/authenticatedRoutes";
 
 const app = express();
 
@@ -103,7 +103,7 @@ const mainRouter = express.Router();
 
 mainRouter.use("/auth", authRouter);
 
-mainRouter.use("/dashboard", dashboardRouter);
+mainRouter.use("/dashboard", authenticatedRouter);
 
 app.use("/api", mainRouter);
 

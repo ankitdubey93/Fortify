@@ -2,7 +2,11 @@ const API_BASE_DASH = "http://localhost:3000/api/dashboard";
 
 export const sendMasterPassword = async (
   encryptionSalt: string,
-  keyDerivationMethod: string
+  keyDerivationMethod: string,
+  verification: {
+    cipherText: string;
+    iv: string;
+  }
 ) => {
   const response = await fetch(`${API_BASE_DASH}/set-master-password`, {
     method: "POST",
@@ -10,7 +14,7 @@ export const sendMasterPassword = async (
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ encryptionSalt, keyDerivationMethod }),
+    body: JSON.stringify({ encryptionSalt, keyDerivationMethod, verification }),
   });
 
   if (!response.ok) {
@@ -38,6 +42,7 @@ export const getEncryptionSalt = async () => {
   const response = await fetch(`${API_BASE_DASH}/salt`, {
     credentials: "include",
   });
-
-  return await response.json();
+  const result = await response.json();
+  console.log(result);
+  return result;
 };
