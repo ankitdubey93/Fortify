@@ -1,4 +1,4 @@
-name: Deploy Fortify Full Stack
+name: 🚀 Deploy Fortify on Push
 
 on:
   push:
@@ -20,20 +20,37 @@ jobs:
           username: ${{ secrets.LIGHTSAIL_USER }}
           key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
           script: |
-
+            echo "🔧 Setting up NVM for Node environment..."
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
-            cd ~/Fortify
+            echo "📂 Navigating to project directory..."
+            cd ${{ secrets.LIGHTSAIL_PROJECT_DIR }}
+
+            echo "🔄 Pulling latest changes..."
             git pull origin main
 
+            echo "🛠️ Building backend..."
             cd backend
             npm install
             npm run build
-            pm2 restart backend || pm2 start dist/index.js --name backend
 
+            echo "♻️ Restarting backend with PM2..."
+            pm2 delete backend || true
+            NODE_ENV=production pm2 start dist/index.js --name backend
+
+
+            echo "🌐 Building frontend..."
             cd ../frontend
             npm install
-            npm run build
+            VITE_API_BASE_URL=https://${{ secrets.LIGHTSAIL_HOST }}/api npm run build
 
+
+            echo "📦 Deploying frontend to Nginx root..."
+            sudo rm -rf /var/www/html/*
+            sudo cp -r dist/* /var/www/html/
+
+            echo "🔄 Reloading Nginx..."
             sudo systemctl reload nginx
+
+            echo "✅ Deployment complete at $(date)"
