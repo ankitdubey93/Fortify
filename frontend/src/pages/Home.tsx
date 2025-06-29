@@ -69,7 +69,7 @@ const Home: React.FC = () => {
     <div className="min-h-screen bg-sky-100 flex flex-col items-center text-center px-4 py-8">
       <div className="mb-8 text-center">
         <h1 className="text-4xl font-bold text-sky-800 mb-2">
-          Welcome to Fortify
+          Welcome to Fortify test
         </h1>
         <p className="text-lg text-gray-700 max-w-xl">
           Fortify is your secure, personal password manager — easy to use and
