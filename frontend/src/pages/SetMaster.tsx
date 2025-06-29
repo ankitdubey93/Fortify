@@ -7,8 +7,9 @@ import {
 } from "../utils/cryptoUtils";
 import { deriveKey } from "../utils/deriveKey";
 import { sendMasterPassword } from "../services/dashServices";
-
+import { useAuth } from "../contexts/AuthContext";
 import { useRedirectIfMasterPasswordExists } from "../hooks/useRedirectIfMasterPasswordExists";
+import { getCurrentUser } from "../services/authServices";
 
 const SetMaster: React.FC = () => {
   useRedirectIfMasterPasswordExists();
@@ -20,6 +21,8 @@ const SetMaster: React.FC = () => {
   const [method, setMethod] = useState<"pbkdf2" | "argon2id">("pbkdf2");
   const [error, setError] = useState<string>("");
   const navigate = useNavigate();
+
+  const { setIsLoggedIn, setUser } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,8 +43,14 @@ const SetMaster: React.FC = () => {
 
       const encodedSalt = bufferToBase64(salt);
       await sendMasterPassword(encodedSalt, method, { cipherText, iv });
+      const response = await getCurrentUser();
 
-      navigate("/dashboard");
+      if (response.ok) {
+        const data = await response.json();
+        setUser(data.user);
+        setIsLoggedIn(true);
+      }
+      navigate("/dashboard", { replace: true });
     } catch (error: unknown) {
       console.error(error);
       if (error instanceof Error) {
