@@ -3,12 +3,18 @@ import React, { useState } from "react";
 import { base64ToBuffer, decryptData, encryptData } from "../utils/cryptoUtils";
 import { getEncryptionSalt } from "../services/dashServices";
 import { deriveKey } from "../utils/deriveKey";
-import { addEntry, getEncryptedVault } from "../services/vaultservices";
+import {
+  addEntry,
+  deleteEntry,
+  getEncryptedVault,
+  updateEntry,
+} from "../services/vaultservices";
 
 const CredentialVault: React.FC = () => {
   const [masterPassword, setMasterPassword] = useState("");
   const [vaultUnlocked, setVaultUnlocked] = useState(false);
   const [credentials, setCredentials] = useState<any[]>([]);
+  const [editingEntry, setEditingEntry] = useState<any | null>(null);
   const [error, setError] = useState("");
 
   const [showAddForm, setShowAddForm] = useState<boolean>(false);
@@ -142,6 +148,22 @@ const CredentialVault: React.FC = () => {
     }
   };
 
+  const handleEdit = (entry: any) => {
+    setEditingEntry(entry);
+  };
+
+  const handleDelete = async (entryId: string) => {
+    if (!window.confirm("Are you sure you want to delete this entry?")) return;
+
+    try {
+      await deleteEntry(entryId);
+      handleUnlock(); // refresh vault
+    } catch (err) {
+      console.error("Delete failed", err);
+      setError("Failed to delete entry.");
+    }
+  };
+
   return (
     <div className="max-w-5xl mx-auto mt-10">
       <div className="flex justify-between items-center mb-4">
@@ -162,6 +184,7 @@ const CredentialVault: React.FC = () => {
               <th className="px-4 py-2 border">Username</th>
               <th className="px-4 py-2 border">Password</th>
               <th className="px-4 py-2 border">Notes</th>
+              <th className="px-4 py-2 border">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -178,6 +201,20 @@ const CredentialVault: React.FC = () => {
                   <td className="border px-4 py-2">{cred.decryptedUsername}</td>
                   <td className="border px-4 py-2">{cred.decryptedPassword}</td>
                   <td className="border px-4 py-2">{cred.decryptedNotes}</td>
+                  <td className="border px-4 py-2 text-center">
+                    <button
+                      onClick={() => handleEdit(cred)}
+                      className="text-blue-600 hover:underline mr-3"
+                    >
+                      ✏️ Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(cred._id)}
+                      className="text-red-600 hover:underline"
+                    >
+                      🗑 Delete
+                    </button>
+                  </td>
                 </tr>
               ))
             )}
@@ -240,6 +277,110 @@ const CredentialVault: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowAddForm(false)}
+                  className="text-red-600 hover:underline"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {editingEntry && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
+            <h3 className="text-xl font-bold mb-4 text-sky-700">Edit Entry</h3>
+            <form
+              className="space-y-4"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!key) return;
+
+                try {
+                  const website = await encryptData(
+                    editingEntry.decryptedWebsite,
+                    key
+                  );
+                  const username = await encryptData(
+                    editingEntry.decryptedUsername,
+                    key
+                  );
+                  const password = await encryptData(
+                    editingEntry.decryptedPassword,
+                    key
+                  );
+                  const notes = editingEntry.decryptedNotes
+                    ? await encryptData(editingEntry.decryptedNotes, key)
+                    : null;
+
+                  await updateEntry(editingEntry._id, {
+                    website,
+                    username,
+                    password,
+                    notes,
+                  });
+
+                  setEditingEntry(null);
+                  handleUnlock(); // refresh vault
+                } catch (err) {
+                  console.error("Edit failed", err);
+                  setError("Failed to update entry.");
+                }
+              }}
+            >
+              <input
+                type="text"
+                value={editingEntry.decryptedWebsite}
+                onChange={(e) =>
+                  setEditingEntry({
+                    ...editingEntry,
+                    decryptedWebsite: e.target.value,
+                  })
+                }
+                className="w-full border p-2 rounded"
+              />
+              <input
+                type="text"
+                value={editingEntry.decryptedUsername}
+                onChange={(e) =>
+                  setEditingEntry({
+                    ...editingEntry,
+                    decryptedUsername: e.target.value,
+                  })
+                }
+                className="w-full border p-2 rounded"
+              />
+              <input
+                type="text"
+                value={editingEntry.decryptedPassword}
+                onChange={(e) =>
+                  setEditingEntry({
+                    ...editingEntry,
+                    decryptedPassword: e.target.value,
+                  })
+                }
+                className="w-full border p-2 rounded"
+              />
+              <textarea
+                value={editingEntry.decryptedNotes}
+                onChange={(e) =>
+                  setEditingEntry({
+                    ...editingEntry,
+                    decryptedNotes: e.target.value,
+                  })
+                }
+                className="w-full border p-2 rounded"
+              />
+              <div className="flex justify-between items-center mt-4">
+                <button
+                  type="submit"
+                  className="bg-sky-700 text-white px-4 py-2 rounded hover:bg-sky-800"
+                >
+                  Save Changes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditingEntry(null)}
                   className="text-red-600 hover:underline"
                 >
                   Cancel

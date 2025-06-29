@@ -19,3 +19,30 @@ export const addEntry = async (entryData: any) => {
 
   return await response.json();
 };
+
+export const updateEntry = async (entryId: string, updatedData: any) => {
+  const response = await fetch(`${API_BASE_VAULT}/${entryId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(updatedData),
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to update entry.");
+  }
+
+  return response.json();
+};
+
+export const deleteEntry = async (entryId: string) => {
+  const response = await fetch(`${API_BASE_VAULT}/${entryId}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+
+  if (!response.ok) throw new Error("Failed to delete entry");
+  return response.json();
+};

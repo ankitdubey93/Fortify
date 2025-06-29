@@ -71,4 +71,82 @@ VaultRouter.post(
   }
 );
 
+VaultRouter.put(
+  "/:entryId",
+  async (req: AuthRequest, res: express.Response) => {
+    if (!req.user) {
+      res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
+
+    try {
+      const { website, username, password, notes } = req.body;
+      if (!website || !username || !password) {
+        res.status(400).json({ message: "Missing required fields" });
+        return;
+      }
+
+      const user = await User.findById(req.user.userId);
+
+      if (!user) {
+        res.status(404).json({ message: "User not found." });
+        return;
+      }
+
+      const entry = user.data.id(req.params.entryId);
+
+      if (!entry) {
+        res.status(404).json({ message: "Entry not found." });
+        return;
+      }
+
+      entry.website = website;
+      entry.username = username;
+      entry.password = password;
+      entry.notes = notes;
+
+      await user.save();
+
+      res.status(200).json({ message: "Entry updated successfully." });
+    } catch (error) {
+      console.error("Error updating entry:", error);
+      res.status(500).json({ message: "Internal server error." });
+    }
+  }
+);
+
+VaultRouter.delete(
+  "/:entryId",
+  async (req: AuthRequest, res: express.Response) => {
+    if (!req.user) {
+      res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
+
+    try {
+      const user = await User.findById(req.user.userId);
+
+      if (!user) {
+        res.status(404).json({ message: "User not found." });
+        return;
+      }
+
+      const entry = user.data.id(req.params.entryId);
+
+      if (!entry) {
+        res.status(404).json({ message: "Entry not found." });
+        return;
+      }
+
+      entry.deleteOne();
+      await user.save();
+
+      res.status(200).json({ message: "Entry updated successfully." });
+    } catch (error) {
+      console.error("Error updating entry:", error);
+      res.status(500).json({ message: "Internal server error." });
+    }
+  }
+);
+
 export default VaultRouter;
