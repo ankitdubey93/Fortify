@@ -30,7 +30,7 @@ jobs:
             echo "🔄 Pulling latest changes..."
             git pull origin main
 
-            echo "🛠️ Building backend..."
+            echo "🛠️ Building backend...new"
             cd backend
             npm install
             npm run build
