@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 const Home: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [justSignedUp, setJustSignedUp] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     username: "",
@@ -15,10 +16,11 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isLoggedIn) {
+    if (isLoggedIn && !justSignedUp) {
       navigate("/dashboard", { replace: true });
     }
-  }, [isLoggedIn, navigate]);
+  }, [isLoggedIn, justSignedUp, navigate]);
+
   const toggleMode = () => {
     setIsLogin((prev) => !prev);
     setFormData({ name: "", username: "", password: "", confirmPassword: "" });
@@ -42,9 +44,7 @@ const Home: React.FC = () => {
           setIsLoggedIn(true);
           setUser(response.user);
 
-          setTimeout(() => {
-            navigate("/dashboard");
-          }, 0);
+          navigate("/dashboard");
         } else {
           alert(response.message || "Login Failed");
         }
@@ -57,6 +57,7 @@ const Home: React.FC = () => {
         if (response && response.user) {
           setIsLoggedIn(true);
           setUser(response.user);
+          setJustSignedUp(true); // 👈 prevent dashboard redirection
           navigate("/set-master-password");
         } else {
           alert(response.message || "Signup Failed");
