@@ -1,12 +1,17 @@
 const API_BASE_VAULT = `${import.meta.env.VITE_API_BASE_URL}/dashboard/credential-vault`;
+import { fetchWithAutoRefresh } from "./fetchWithAutoRefresh";
 
 export const getEncryptedVault = async () => {
-  const res = await fetch(`${API_BASE_VAULT}/`, { credentials: "include" });
+  const res = await fetchWithAutoRefresh(`${API_BASE_VAULT}/`, {
+    credentials: "include",
+  });
+
+  if (!res.ok) throw new Error("Failed to fetch vault entries.");
   return await res.json();
 };
 
 export const addEntry = async (entryData: any) => {
-  const response = await fetch(`${API_BASE_VAULT}/add-entry`, {
+  const response = await fetchWithAutoRefresh(`${API_BASE_VAULT}/add-entry`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -21,7 +26,7 @@ export const addEntry = async (entryData: any) => {
 };
 
 export const updateEntry = async (entryId: string, updatedData: any) => {
-  const response = await fetch(`${API_BASE_VAULT}/${entryId}`, {
+  const response = await fetchWithAutoRefresh(`${API_BASE_VAULT}/${entryId}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -38,7 +43,7 @@ export const updateEntry = async (entryId: string, updatedData: any) => {
 };
 
 export const deleteEntry = async (entryId: string) => {
-  const response = await fetch(`${API_BASE_VAULT}/${entryId}`, {
+  const response = await fetchWithAutoRefresh(`${API_BASE_VAULT}/${entryId}`, {
     method: "DELETE",
     credentials: "include",
   });
