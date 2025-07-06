@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 
 import { base64ToBuffer, decryptData, encryptData } from "../utils/cryptoUtils";
 import { getEncryptionSalt } from "../services/dashServices";
@@ -30,7 +30,48 @@ const CredentialVault: React.FC = () => {
   });
 
   const [key, setKey] = useState<CryptoKey | null>(null);
-  // Fetch encryption salt on mount
+
+  const AUTO_LOCK_TIME = 1 * 60 * 1000;
+  const timeoutRef = useRef<number | undefined>(undefined);
+
+  const lockVault = useCallback(() => {
+    setVaultUnlocked(false);
+    setKey(null);
+    setCredentials([]);
+    setEditingEntry(null);
+    setShowAddForm(false);
+    setMasterPassword("");
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = undefined;
+    }
+  }, []);
+
+  const resetAutoLockTimer = useCallback(() => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = window.setTimeout(() => {
+      lockVault();
+      console.log("Vault auto-locked due to inactivity.");
+    }, AUTO_LOCK_TIME);
+  }, [lockVault]);
+
+  useEffect(() => {
+    if (!vaultUnlocked) return;
+
+    const handleActivity = () => resetAutoLockTimer();
+
+    window.addEventListener("mousemove", handleActivity);
+    window.addEventListener("keydown", handleActivity);
+
+    // Start the timer on vault unlock
+    resetAutoLockTimer();
+
+    return () => {
+      window.removeEventListener("mousemove", handleActivity);
+      window.removeEventListener("keydown", handleActivity);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, [vaultUnlocked, resetAutoLockTimer]);
 
   const handleUnlock = async () => {
     setError("");
@@ -160,6 +201,8 @@ const CredentialVault: React.FC = () => {
       <div className="max-w-md mx-auto mt-10">
         <h2 className="text-xl font-bold mb-4">Enter Master Password</h2>
         <input
+          autoComplete="off"
+          name="master-password"
           type="password"
           value={masterPassword}
           onChange={(e) => setMasterPassword(e.target.value)}
@@ -195,14 +238,14 @@ const CredentialVault: React.FC = () => {
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full table-auto border-collapse bg-white shadow rounded-md">
+        <table className="w-full table-auto border-collapse bg-white shadow rounded-md overflow-x-auto">
           <thead>
             <tr className="bg-sky-100 text-sky-800 font-semibold">
-              <th className="px-4 py-2 border">Website</th>
-              <th className="px-4 py-2 border">Username</th>
-              <th className="px-4 py-2 border">Password</th>
-              <th className="px-4 py-2 border">Notes</th>
-              <th className="px-4 py-2 border">Actions</th>
+              <th className="px-4 py-2 border w-1/6">Website</th>
+              <th className="px-4 py-2 border w-1/6">Username</th>
+              <th className="px-4 py-2 border w-1/6">Password</th>
+              <th className="px-4 py-2 border w-1/6">Notes</th>
+              <th className="px-4 py-2 border w-1/6">Actions</th>
             </tr>
           </thead>
           <tbody>
