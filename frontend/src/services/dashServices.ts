@@ -1,3 +1,5 @@
+import { fetchWithAutoRefresh } from "./fetchWithAutoRefresh";
+
 const API_BASE_DASH = `${import.meta.env.VITE_API_BASE_URL}/dashboard`;
 
 export const sendMasterPassword = async (
@@ -39,7 +41,7 @@ export const getMasterPasswordStatus = async () => {
 };
 
 export const getEncryptionSalt = async () => {
-  const response = await fetch(`${API_BASE_DASH}/salt`, {
+  const response = await fetchWithAutoRefresh(`${API_BASE_DASH}/salt`, {
     credentials: "include",
   });
   const result = await response.json();

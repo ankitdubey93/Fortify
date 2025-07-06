@@ -17,6 +17,10 @@ const CredentialVault: React.FC = () => {
   const [editingEntry, setEditingEntry] = useState<any | null>(null);
   const [error, setError] = useState("");
 
+  const [isUnlocking, setIsUnlocking] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+
   const [showAddForm, setShowAddForm] = useState<boolean>(false);
   const [newEntry, setNewEntry] = useState({
     website: "",
@@ -30,6 +34,7 @@ const CredentialVault: React.FC = () => {
 
   const handleUnlock = async () => {
     setError("");
+    setIsUnlocking(true);
 
     try {
       const response = await getEncryptionSalt();
@@ -96,33 +101,17 @@ const CredentialVault: React.FC = () => {
     } catch (error) {
       console.error(error);
       setError("Incorrect master password or decryption failed.");
+    } finally {
+      setIsUnlocking(false);
     }
   };
-
-  if (!vaultUnlocked) {
-    return (
-      <div className="max-w-md mx-auto mt-10">
-        <h2 className="text-xl font-bold mb-4">Enter Master Password</h2>
-        <input
-          type="password"
-          value={masterPassword}
-          onChange={(e) => setMasterPassword(e.target.value)}
-          className="w-full border p-2 rounded mb-2"
-        />
-        <button
-          onClick={handleUnlock}
-          className="w-full bg-sky-700 text-white p-2 rounded hover:bg-sky-800"
-        >
-          Unlock Vault
-        </button>
-        {error && <p className="text-red-600 mt-3">{error}</p>}
-      </div>
-    );
-  }
 
   const handleAddEntry = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!key) return;
+
+    setIsAdding(true);
+    setError("");
 
     try {
       const website = await encryptData(newEntry.website, key);
@@ -145,6 +134,8 @@ const CredentialVault: React.FC = () => {
     } catch (err) {
       console.error("Add entry failed", err);
       setError("Failed to add entry.");
+    } finally {
+      setIsAdding(false);
     }
   };
 
@@ -164,8 +155,35 @@ const CredentialVault: React.FC = () => {
     }
   };
 
+  if (!vaultUnlocked) {
+    return (
+      <div className="max-w-md mx-auto mt-10">
+        <h2 className="text-xl font-bold mb-4">Enter Master Password</h2>
+        <input
+          type="password"
+          value={masterPassword}
+          onChange={(e) => setMasterPassword(e.target.value)}
+          className="w-full border p-2 rounded mb-2"
+        />
+        <button
+          onClick={handleUnlock}
+          className="w-full bg-sky-700 text-white p-2 rounded hover:bg-sky-800"
+          disabled={isUnlocking}
+        >
+          {isUnlocking ? "Unlocking..." : "Unlock Vault"}
+        </button>
+        {error && <p className="text-red-600 mt-3">{error}</p>}
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-5xl mx-auto mt-10">
+    <div className="max-w-full mx-auto mt-10 relative p-4">
+      {isUnlocking && (
+        <div className="absolute inset-0 bg-white/80 z-50 flex items-center justify-center">
+          <div className="animate-spin h-10 w-10 border-4 border-sky-700 border-t-transparent rounded-full" />
+        </div>
+      )}
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold text-sky-800">Your Credentials</h2>
         <button
@@ -224,7 +242,12 @@ const CredentialVault: React.FC = () => {
 
       {showAddForm && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
+          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md relative">
+            {isAdding && (
+              <div className="absolute inset-0 bg-white/80 flex justify-center items-center rounded-xl">
+                <div className="animate-spin h-8 w-8 border-4 border-sky-700 border-t-transparent rounded-full" />
+              </div>
+            )}
             <h3 className="text-xl font-bold mb-4 text-sky-700">
               Add New Entry
             </h3>
@@ -270,9 +293,10 @@ const CredentialVault: React.FC = () => {
               <div className="flex justify-between items-center mt-4">
                 <button
                   type="submit"
-                  className="bg-sky-700 text-white px-4 py-2 rounded hover:bg-sky-800"
+                  className="bg-sky-700 text-white px-4 py-2 rounded hover:bg-sky-800 disabled:opacity-50"
+                  disabled={isAdding}
                 >
-                  Save Entry
+                  {isAdding ? "Saving..." : "Save Entry"}
                 </button>
                 <button
                   type="button"
@@ -288,13 +312,21 @@ const CredentialVault: React.FC = () => {
       )}
       {editingEntry && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
+          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md relative">
+            {isUpdating && (
+              <div className="absolute inset-0 bg-white/80 flex justify-center items-center rounded-xl">
+                <div className="animate-spin h-8 w-8 border-4 border-sky-700 border-t-transparent rounded-full" />
+              </div>
+            )}
             <h3 className="text-xl font-bold mb-4 text-sky-700">Edit Entry</h3>
             <form
               className="space-y-4"
               onSubmit={async (e) => {
                 e.preventDefault();
                 if (!key) return;
+
+                setIsUpdating(true);
+                setError("");
 
                 try {
                   const website = await encryptData(
@@ -325,6 +357,8 @@ const CredentialVault: React.FC = () => {
                 } catch (err) {
                   console.error("Edit failed", err);
                   setError("Failed to update entry.");
+                } finally {
+                  setIsUpdating(false);
                 }
               }}
             >
@@ -374,9 +408,10 @@ const CredentialVault: React.FC = () => {
               <div className="flex justify-between items-center mt-4">
                 <button
                   type="submit"
-                  className="bg-sky-700 text-white px-4 py-2 rounded hover:bg-sky-800"
+                  className="bg-sky-700 text-white px-4 py-2 rounded hover:bg-sky-800 disabled:opacity-50"
+                  disabled={isUpdating}
                 >
-                  Save Changes
+                  {isUpdating ? "Saving..." : "Save Changes"}
                 </button>
                 <button
                   type="button"
