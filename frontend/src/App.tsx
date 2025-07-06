@@ -5,6 +5,7 @@ import Dashboard from "./pages/Dashboard";
 import { useAuth } from "./contexts/AuthContext";
 import CredentialVault from "./pages/CredentialVault";
 import Navbar from "./components/Navbar";
+import NotFound from "./pages/NotFound";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isLoggedIn } = useAuth();
@@ -48,6 +49,7 @@ const App = () => {
             </ProtectedRoute>
           }
         />
+        <Route path="*" element={<NotFound />}></Route>
       </Route>
     </Routes>
   );
