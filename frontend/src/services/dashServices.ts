@@ -6,8 +6,8 @@ export const sendMasterPassword = async (
   encryptionSalt: string,
   keyDerivationMethod: string,
   verification: {
-    cipherText: string;
-    iv: string;
+    secret: string;
+    hmac: string;
   }
 ) => {
   const response = await fetch(`${API_BASE_DASH}/set-master-password`, {

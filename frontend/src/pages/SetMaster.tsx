@@ -1,10 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  bufferToBase64,
-  encryptData,
-  generateSalt,
-} from "../utils/cryptoUtils";
+import { bufferToBase64, generateSalt, createHMAC } from "../utils/cryptoUtils";
 import { deriveKey } from "../utils/deriveKey";
 import { sendMasterPassword } from "../services/dashServices";
 import { useAuth } from "../contexts/AuthContext";
@@ -35,14 +31,20 @@ const SetMaster: React.FC = () => {
 
     try {
       const salt = generateSalt();
-      const key = await deriveKey(masterPassword, salt, method);
+      const { aesKey: _, hmacKey } = await deriveKey(
+        masterPassword,
+        salt,
+        method
+      );
 
-      const verificationText = import.meta.env.VITE_VERIFICATION_TEXT;
-
-      const { cipherText, iv } = await encryptData(verificationText, key);
+      const verificationText = crypto.randomUUID();
+      const hmac = await createHMAC(hmacKey, verificationText);
 
       const encodedSalt = bufferToBase64(salt);
-      await sendMasterPassword(encodedSalt, method, { cipherText, iv });
+      await sendMasterPassword(encodedSalt, method, {
+        secret: verificationText,
+        hmac,
+      });
       const response = await getCurrentUser();
 
       if (response.ok) {

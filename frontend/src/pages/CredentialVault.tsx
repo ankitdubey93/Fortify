@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 
-import { base64ToBuffer, decryptData, encryptData } from "../utils/cryptoUtils";
+import {
+  base64ToBuffer,
+  decryptData,
+  encryptData,
+  createHMAC,
+} from "../utils/cryptoUtils";
 import { getEncryptionSalt } from "../services/dashServices";
 import { deriveKey } from "../utils/deriveKey";
 import {
@@ -29,14 +34,14 @@ const CredentialVault: React.FC = () => {
     notes: "",
   });
 
-  const [key, setKey] = useState<CryptoKey | null>(null);
+  const [aesKey, setAesKey] = useState<CryptoKey | null>(null);
 
   const AUTO_LOCK_TIME = 1 * 60 * 1000;
   const timeoutRef = useRef<number | undefined>(undefined);
 
   const lockVault = useCallback(() => {
     setVaultUnlocked(false);
-    setKey(null);
+    setAesKey(null);
     setCredentials([]);
     setEditingEntry(null);
     setShowAddForm(false);
@@ -85,21 +90,15 @@ const CredentialVault: React.FC = () => {
         throw new Error("Missing required encryption data from server.");
       }
 
-      const key = await deriveKey(
+      const { aesKey, hmacKey } = await deriveKey(
         masterPassword,
         base64ToBuffer(encryptionSalt),
         keyDerivationMethod
       );
 
-      const check = await decryptData(
-        verification.cipherText,
-        verification.iv,
-        key
-      );
+      const hmacToVerify = await createHMAC(hmacKey, verification.secret);
 
-      const verificationText = import.meta.env.VITE_VERIFICATION_TEXT;
-
-      if (check !== verificationText) {
+      if (hmacToVerify !== verification.hmac) {
         throw new Error("Master password verification failed.");
       }
 
@@ -110,20 +109,20 @@ const CredentialVault: React.FC = () => {
           const decryptedWebsite = await decryptData(
             entry.website.cipherText,
             entry.website.iv,
-            key
+            aesKey
           );
           const decryptedUsername = await decryptData(
             entry.username.cipherText,
             entry.username.iv,
-            key
+            aesKey
           );
           const decryptedPassword = await decryptData(
             entry.password.cipherText,
             entry.password.iv,
-            key
+            aesKey
           );
           const decryptedNotes = entry.notes
-            ? await decryptData(entry.notes.cipherText, entry.notes.iv, key)
+            ? await decryptData(entry.notes.cipherText, entry.notes.iv, aesKey)
             : "";
 
           return {
@@ -136,7 +135,7 @@ const CredentialVault: React.FC = () => {
         })
       );
 
-      setKey(key);
+      setAesKey(aesKey);
       setCredentials(decrypted);
       setVaultUnlocked(true);
     } catch (error) {
@@ -149,17 +148,17 @@ const CredentialVault: React.FC = () => {
 
   const handleAddEntry = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!key) return;
+    if (!aesKey) return;
 
     setIsAdding(true);
     setError("");
 
     try {
-      const website = await encryptData(newEntry.website, key);
-      const username = await encryptData(newEntry.username, key);
-      const password = await encryptData(newEntry.password, key);
+      const website = await encryptData(newEntry.website, aesKey);
+      const username = await encryptData(newEntry.username, aesKey);
+      const password = await encryptData(newEntry.password, aesKey);
       const notes = newEntry.notes
-        ? await encryptData(newEntry.notes, key)
+        ? await encryptData(newEntry.notes, aesKey)
         : null;
 
       await addEntry({
@@ -366,7 +365,7 @@ const CredentialVault: React.FC = () => {
               className="space-y-4"
               onSubmit={async (e) => {
                 e.preventDefault();
-                if (!key) return;
+                if (!aesKey) return;
 
                 setIsUpdating(true);
                 setError("");
@@ -374,18 +373,18 @@ const CredentialVault: React.FC = () => {
                 try {
                   const website = await encryptData(
                     editingEntry.decryptedWebsite,
-                    key
+                    aesKey
                   );
                   const username = await encryptData(
                     editingEntry.decryptedUsername,
-                    key
+                    aesKey
                   );
                   const password = await encryptData(
                     editingEntry.decryptedPassword,
-                    key
+                    aesKey
                   );
                   const notes = editingEntry.decryptedNotes
-                    ? await encryptData(editingEntry.decryptedNotes, key)
+                    ? await encryptData(editingEntry.decryptedNotes, aesKey)
                     : null;
 
                   await updateEntry(editingEntry._id, {

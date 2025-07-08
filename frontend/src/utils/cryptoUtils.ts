@@ -39,3 +39,25 @@ export const decryptData = async (
 
   return new TextDecoder().decode(decrypted);
 };
+
+export const createHMAC = async (
+  key: CryptoKey,
+  message: string
+): Promise<string> => {
+  const encoder = new TextEncoder();
+  const msgBuffer = encoder.encode(message);
+
+  const rawKey = await crypto.subtle.exportKey("raw", key);
+
+  const hmacKey = await crypto.subtle.importKey(
+    "raw",
+    rawKey,
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+
+  const signature = await crypto.subtle.sign("HMAC", hmacKey, msgBuffer);
+
+  return bufferToBase64(new Uint8Array(signature));
+};

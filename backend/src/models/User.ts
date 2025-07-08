@@ -21,7 +21,10 @@ export interface User extends Document {
   encryptionSalt?: string;
   keyDerivationMethod?: "argon2id" | "pbkdf2";
   data: Types.DocumentArray<Entry>;
-  verification: EncryptedField;
+  verification: {
+    secret: string;
+    hmac: string;
+  };
 }
 
 const encryptedFieldSchema = new Schema(
@@ -49,7 +52,10 @@ const userSchema = new Schema<User>({
   encryptionSalt: { type: String },
   keyDerivationMethod: { type: String, enum: ["argon2id", "pbkdf2"] },
   data: [entrySchema],
-  verification: encryptedFieldSchema,
+  verification: {
+    secret: { type: String },
+    hmac: { type: String },
+  },
 });
 
 export const User = mongoose.model<User>("User", userSchema);
