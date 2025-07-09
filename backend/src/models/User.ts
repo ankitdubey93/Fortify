@@ -16,15 +16,22 @@ export interface Entry extends mongoose.Types.Subdocument {
 export interface User extends Document {
   _id: mongoose.Types.ObjectId;
   name: string;
-  username: string;
+  email: string;
   password: string;
   encryptionSalt?: string;
   keyDerivationMethod?: "argon2id" | "pbkdf2";
+  emailVerified: boolean;
+  emailVerificationToken: string;
+  emailVerificationTokenExpires: Date;
+  passwordResetToken: string;
+  passwordResetTokenExpires: Date;
   data: Types.DocumentArray<Entry>;
   verification: {
     secret: string;
     hmac: string;
   };
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const encryptedFieldSchema = new Schema(
@@ -45,17 +52,32 @@ const entrySchema = new Schema<Entry>(
   { _id: true }
 );
 
-const userSchema = new Schema<User>({
-  name: { type: String, required: true },
-  username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  encryptionSalt: { type: String },
-  keyDerivationMethod: { type: String, enum: ["argon2id", "pbkdf2"] },
-  data: [entrySchema],
-  verification: {
-    secret: { type: String },
-    hmac: { type: String },
+const userSchema = new Schema<User>(
+  {
+    name: { type: String, required: true },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      index: true,
+      lowercase: true,
+      trim: true,
+    },
+    password: { type: String, required: true },
+    encryptionSalt: { type: String },
+    keyDerivationMethod: { type: String, enum: ["argon2id", "pbkdf2"] },
+    emailVerified: { type: Boolean, default: false },
+    emailVerificationToken: { type: String, default: null },
+    emailVerificationTokenExpires: { type: Date, default: null },
+    passwordResetToken: { type: String, default: null },
+    passwordResetTokenExpires: { type: Date, default: null },
+    data: [entrySchema],
+    verification: {
+      secret: { type: String, default: null },
+      hmac: { type: String, default: null },
+    },
   },
-});
+  { timestamps: true }
+);
 
 export const User = mongoose.model<User>("User", userSchema);
