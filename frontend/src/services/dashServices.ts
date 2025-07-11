@@ -40,6 +40,19 @@ export const getMasterPasswordStatus = async () => {
   return response.json();
 };
 
+export const getEmailVerifiedStatus = async () => {
+  const response = await fetch(`${API_BASE_DASH}/email-verified`, {
+    method: "GET",
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch email verification status.");
+  }
+
+  return response.json();
+};
+
 export const getEncryptionSalt = async () => {
   const response = await fetchWithAutoRefresh(`${API_BASE_DASH}/salt`, {
     credentials: "include",

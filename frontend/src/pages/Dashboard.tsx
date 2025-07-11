@@ -1,11 +1,15 @@
-import { signout } from "../services/authServices";
+import { signout, resendVerificationEmail } from "../services/authServices";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import { useMasterPasswordStatus } from "../hooks/useMasterPasswordStatus";
+import { useEmailVerifiedStatus } from "../hooks/useEmailVerifiedStatus";
 
 const Dashboard: React.FC = () => {
   const { user, setUser, setIsLoggedIn } = useAuth();
-  const { hasMasterPassword, loading } = useMasterPasswordStatus();
+  const { hasMasterPassword, loading: loadingMasterPassword } =
+    useMasterPasswordStatus();
+  const { emailVerified, loading: loadingEmailVerified } =
+    useEmailVerifiedStatus();
   const navigate = useNavigate();
 
   const handleSignout = async () => {
@@ -20,7 +24,7 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  if (loading) return null;
+  if (loadingMasterPassword || loadingEmailVerified) return null;
 
   return (
     <div className="min-h-screen bg-sky-100 flex flex-col items-center px-6 py-10">
@@ -32,6 +36,7 @@ const Dashboard: React.FC = () => {
           You are logged into your Fortify dashboard.
         </p>
 
+        {/* Master password not set */}
         {hasMasterPassword === false && (
           <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-3 rounded-md mb-6 shadow-md">
             <p>
@@ -42,6 +47,21 @@ const Dashboard: React.FC = () => {
               >
                 Set it now
               </Link>
+            </p>
+          </div>
+        )}
+
+        {/* Email not verified */}
+        {emailVerified === false && (
+          <div className="bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded-md mb-4 shadow-md">
+            <p>
+              Your email is <strong>not verified</strong>.{" "}
+              <button
+                // onClick={handleResendVerification}
+                className="underline text-sky-800 font-medium hover:text-sky-900"
+              >
+                Verify now
+              </button>
             </p>
           </div>
         )}

@@ -5,10 +5,10 @@ import { useNavigate } from "react-router-dom";
 
 const Home: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
-  const [justSignedUp, setJustSignedUp] = useState(false);
+
   const [formData, setFormData] = useState({
     name: "",
-    username: "",
+    email: "",
     password: "",
     confirmPassword: "",
   });
@@ -16,14 +16,14 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isLoggedIn && !justSignedUp) {
+    if (isLoggedIn) {
       navigate("/dashboard", { replace: true });
     }
-  }, [isLoggedIn, justSignedUp, navigate]);
+  }, [isLoggedIn, navigate]);
 
   const toggleMode = () => {
     setIsLogin((prev) => !prev);
-    setFormData({ name: "", username: "", password: "", confirmPassword: "" });
+    setFormData({ name: "", email: "", password: "", confirmPassword: "" });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,11 +39,10 @@ const Home: React.FC = () => {
 
     try {
       if (isLogin) {
-        const response = await signin(formData.username, formData.password);
+        const response = await signin(formData.email, formData.password);
         if (response.ok) {
           setIsLoggedIn(true);
           setUser(response.user);
-
           navigate("/dashboard");
         } else {
           alert(response.message || "Login Failed");
@@ -51,14 +50,13 @@ const Home: React.FC = () => {
       } else {
         const response = await signup(
           formData.name,
-          formData.username,
+          formData.email,
           formData.password
         );
         if (response && response.user) {
           setIsLoggedIn(true);
           setUser(response.user);
-          setJustSignedUp(true); // 👈 prevent dashboard redirection
-          navigate("/set-master-password");
+          navigate("/dashboard");
         } else {
           alert(response.message || "Signup Failed");
         }
@@ -98,11 +96,11 @@ const Home: React.FC = () => {
               />
             )}
             <input
-              type="text"
-              name="username"
-              placeholder="Username"
+              type="email"
+              name="email"
+              placeholder="Email"
               onChange={handleChange}
-              value={formData.username}
+              value={formData.email}
               className="w-full px-4 py-2 border rounded focus:outline-none focus:ring focus:border-sky-500"
               required
             />

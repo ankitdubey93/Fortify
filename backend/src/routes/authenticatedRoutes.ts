@@ -104,6 +104,34 @@ authenticatedRouter.get(
   }
 );
 
+authenticatedRouter.get(
+  "/email-verified",
+  async (req: AuthRequest, res: express.Response) => {
+    if (!req.user) {
+      throw new Error("Not authorized.");
+    }
+
+    try {
+      const loggedInUser = await User.findById(req.user.userId).select(
+        "emailVerified"
+      );
+
+      if (!loggedInUser) {
+        res
+          .status(404)
+          .json({ message: "User session expired. Please login again." });
+        return;
+      }
+
+      res.status(200).json({
+        emailVerified: !!loggedInUser.emailVerified,
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
+);
+
 authenticatedRouter.use("/credential-vault", VaultRouter);
 
 authenticatedRouter.post(

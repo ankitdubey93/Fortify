@@ -58,22 +58,38 @@ router.post("/signup", async (req: Request, res: Response) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const token = crypto.randomBytes(32).toString("hex");
+    // const token = crypto.randomBytes(32).toString("hex");
 
     const newUser = new User({
       name,
       email,
       password: hashedPassword,
-      emailVerificationToken: token,
-      emailVerificationTokenExpires: new Date(Date.now() + TOKEN_EXPIRY),
+      // emailVerificationToken: token,
+      // emailVerificationTokenExpires: new Date(Date.now() + TOKEN_EXPIRY),
     });
 
     await newUser.save();
 
-    await sendVerificationEmail(newUser.email, token);
+    // await sendVerificationEmail(newUser.email, token);
+
+    const accessToken = generateAccessToken(newUser._id.toString());
+    const refreshToken = generateRefreshToken(newUser._id.toString());
+
+    await new RefreshToken({
+      userId: newUser._id,
+      token: refreshToken,
+    }).save();
+
+    res.cookie("accessToken", accessToken, accessTokenCookieOptions);
+    res.cookie("refreshToken", refreshToken, refreshTokenCookieOptions);
 
     res.status(201).json({
       message: "Signup successful! Check you email to verify.",
+      user: {
+        _id: newUser._id,
+        name: newUser.name,
+        email: newUser.email,
+      },
     });
     return;
   } catch (error) {
@@ -116,10 +132,8 @@ router.post("/signin", async (req: Request, res: Response) => {
 
     const validUser = await User.findOne({ email });
 
-    if (!validUser || !validUser.emailVerified) {
-      res
-        .status(404)
-        .json({ message: "User not found or email not verified." });
+    if (!validUser) {
+      res.status(404).json({ message: "User not found" });
       return;
     }
 
@@ -161,6 +175,7 @@ router.post("/signin", async (req: Request, res: Response) => {
 });
 
 router.get("/check", authenticateToken, async (req: Request, res: Response) => {
+  console.log("route hit");
   const accessToken = req.cookies?.accessToken;
   if (!accessToken) {
     res.status(401).json({ message: "Not authenticated." });
