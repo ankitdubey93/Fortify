@@ -21,10 +21,10 @@ export interface User extends Document {
   encryptionSalt?: string;
   keyDerivationMethod?: "argon2id" | "pbkdf2";
   emailVerified: boolean;
-  emailVerificationToken: string;
-  emailVerificationTokenExpires: Date;
-  passwordResetToken: string;
-  passwordResetTokenExpires: Date;
+  emailVerificationToken: string | null;
+  emailVerificationTokenExpires: Date | null;
+  passwordResetToken: string | null;
+  passwordResetTokenExpires: Date | null;
   data: Types.DocumentArray<Entry>;
   verification: {
     secret: string;

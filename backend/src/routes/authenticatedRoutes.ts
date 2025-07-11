@@ -68,7 +68,7 @@ authenticatedRouter.get(
       res.status(200).json({
         _id: loggedInUser._id,
         name: loggedInUser.name,
-        username: loggedInUser.username,
+        email: loggedInUser.email,
       });
     } catch (error) {
       res.status(500).json({ message: "Internal server error." });

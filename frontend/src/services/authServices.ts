@@ -2,30 +2,26 @@ import { fetchWithAutoRefresh } from "./fetchWithAutoRefresh";
 
 const API_BASE_AUTH = `${import.meta.env.VITE_API_BASE_URL}/auth`;
 
-export const signup = async (
-  name: string,
-  username: string,
-  password: string
-) => {
+export const signup = async (name: string, email: string, password: string) => {
   const response = await fetch(`${API_BASE_AUTH}/signup`, {
     method: "POST",
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ name, username, password }),
+    body: JSON.stringify({ name, email, password }),
   });
   return response.json();
 };
 
-export const signin = async (username: string, password: string) => {
+export const signin = async (email: string, password: string) => {
   const response = await fetch(`${API_BASE_AUTH}/signin`, {
     method: "POST",
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ username, password }),
+    body: JSON.stringify({ email, password }),
   });
 
   const data = await response.json();
@@ -61,4 +57,39 @@ export const getCurrentUser = async () => {
   }
 
   return response.json();
+};
+
+export const verifyEmail = async (token: string) => {
+  const response = await fetch(`${API_BASE_AUTH}/verify-email?token=${token}`, {
+    method: "GET",
+    credentials: "include",
+  });
+
+  const data = await response.json();
+
+  return {
+    ok: response.ok,
+    status: response.status,
+    message: data.message || "",
+    user: data.user || null,
+  };
+};
+
+export const resendVerificationEmail = async (email: string) => {
+  const response = await fetch(`${API_BASE_AUTH}/resend-verification`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email }),
+  });
+
+  const data = await response.json();
+
+  return {
+    status: response.status,
+    ok: response.ok,
+    ...data,
+  };
 };
