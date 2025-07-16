@@ -6,6 +6,8 @@ interface User {
   _id: string;
   name: string;
   email: string;
+  emailVerified: boolean;
+  hasMasterPassword: boolean;
 }
 
 interface AuthContextType {
@@ -13,6 +15,7 @@ interface AuthContextType {
   isLoggedIn: boolean;
   setUser: (user: User | null) => void;
   setIsLoggedIn: (loggedIn: boolean) => void;
+  refreshUserDetails: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -24,20 +27,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
 
+  const fetchUser = async () => {
+    try {
+      const data = await getCurrentUser();
+      setUser(data.user);
+      setIsLoggedIn(true);
+    } catch (err) {
+      setUser(null);
+      setIsLoggedIn(false);
+    }
+  };
+
+  const refreshUserDetails = async () => {
+    await fetchUser(); // Reuse same function
+  };
+
   // Check if the user is already logged in (on initial load)
   useEffect(() => {
     const checkAuth = async () => {
-      try {
-        const data = await getCurrentUser();
-        setUser(data.user);
-        setIsLoggedIn(true);
-      } catch (error) {
-        setUser(null);
-        setIsLoggedIn(false);
-        console.error("Session expired", error);
-      } finally {
-        setLoading(false);
-      }
+      await fetchUser();
+      setLoading(false);
     };
 
     checkAuth();
@@ -46,7 +55,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   if (loading) return null;
 
   return (
-    <AuthContext.Provider value={{ user, isLoggedIn, setUser, setIsLoggedIn }}>
+    <AuthContext.Provider
+      value={{ user, isLoggedIn, setUser, setIsLoggedIn, refreshUserDetails }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -6,6 +6,7 @@ import { useAuth } from "./contexts/AuthContext";
 import CredentialVault from "./pages/CredentialVault";
 import Navbar from "./components/Navbar";
 import NotFound from "./pages/NotFound";
+import VerifyEmail from "./pages/VerifyEmail";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isLoggedIn } = useAuth();
@@ -24,6 +25,8 @@ const App = () => {
     <Routes>
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />
+
+        <Route path="/verify-email" element={<VerifyEmail />} />
         <Route
           path="/set-master-password"
           element={

@@ -1,16 +1,17 @@
-import { signout, resendVerificationEmail } from "../services/authServices";
-import { useAuth } from "../contexts/AuthContext";
+import { useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useMasterPasswordStatus } from "../hooks/useMasterPasswordStatus";
-import { useEmailVerifiedStatus } from "../hooks/useEmailVerifiedStatus";
+import { useAuth } from "../contexts/AuthContext";
+import { signout, resendVerificationEmail } from "../services/authServices";
 
 const Dashboard: React.FC = () => {
-  const { user, setUser, setIsLoggedIn } = useAuth();
-  const { hasMasterPassword, loading: loadingMasterPassword } =
-    useMasterPasswordStatus();
-  const { emailVerified, loading: loadingEmailVerified } =
-    useEmailVerifiedStatus();
+  const { user, setUser, setIsLoggedIn, refreshUserDetails } = useAuth();
+
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Fetch latest user info when Dashboard mounts
+    refreshUserDetails();
+  }, []);
 
   const handleSignout = async () => {
     try {
@@ -24,7 +25,19 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  if (loadingMasterPassword || loadingEmailVerified) return null;
+  // const handleResendVerification = async () => {
+  //   try {
+  //     const res = await resendVerificationEmail();
+  //     if (res.ok) {
+  //       alert("Verification email resent. Please check your inbox.");
+  //     } else {
+  //       alert(res.message || "Failed to resend verification email.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error resending verification email:", error);
+  //     alert("Something went wrong. Try again later.");
+  //   }
+  // };
 
   return (
     <div className="min-h-screen bg-sky-100 flex flex-col items-center px-6 py-10">
@@ -37,7 +50,7 @@ const Dashboard: React.FC = () => {
         </p>
 
         {/* Master password not set */}
-        {hasMasterPassword === false && (
+        {user?.hasMasterPassword === false && (
           <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-3 rounded-md mb-6 shadow-md">
             <p>
               You have not set your <strong>master password</strong>.{" "}
@@ -52,7 +65,7 @@ const Dashboard: React.FC = () => {
         )}
 
         {/* Email not verified */}
-        {emailVerified === false && (
+        {user?.emailVerified === false && (
           <div className="bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded-md mb-4 shadow-md">
             <p>
               Your email is <strong>not verified</strong>.{" "}

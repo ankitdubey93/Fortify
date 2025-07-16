@@ -58,19 +58,19 @@ router.post("/signup", async (req: Request, res: Response) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // const token = crypto.randomBytes(32).toString("hex");
+    const token = crypto.randomBytes(32).toString("hex");
 
     const newUser = new User({
       name,
       email,
       password: hashedPassword,
-      // emailVerificationToken: token,
-      // emailVerificationTokenExpires: new Date(Date.now() + TOKEN_EXPIRY),
+      emailVerificationToken: token,
+      emailVerificationTokenExpires: new Date(Date.now() + TOKEN_EXPIRY),
     });
 
     await newUser.save();
 
-    // await sendVerificationEmail(newUser.email, token);
+    await sendVerificationEmail(newUser.email, token);
 
     const accessToken = generateAccessToken(newUser._id.toString());
     const refreshToken = generateRefreshToken(newUser._id.toString());
@@ -99,6 +99,7 @@ router.post("/signup", async (req: Request, res: Response) => {
 });
 
 router.get("/verify-email", async (req: Request, res: Response) => {
+  console.log("route hit");
   const token = req.query.token as string;
   const user = await User.findOne({
     emailVerificationToken: token,
@@ -106,6 +107,11 @@ router.get("/verify-email", async (req: Request, res: Response) => {
 
   if (!user) {
     res.status(400).json({ message: "Invalid or expired verification link." });
+    return;
+  }
+
+  if (user.emailVerified) {
+    res.status(200).json({ ok: true, message: "Already verified." });
     return;
   }
 
@@ -123,7 +129,9 @@ router.get("/verify-email", async (req: Request, res: Response) => {
 
   await user.save();
 
-  res.status(200).json({ message: "Email Verified!. You can now sign in." });
+  res
+    .status(200)
+    .json({ ok: true, message: "Email Verified!. You can now sign in." });
 });
 
 router.post("/signin", async (req: Request, res: Response) => {
@@ -188,14 +196,24 @@ router.get("/check", authenticateToken, async (req: Request, res: Response) => {
       process.env.ACCESS_TOKEN_SECRET as string
     ) as { userId: string };
 
-    const user = await User.findById(payload.userId).select("name email _id");
+    const user = await User.findById(payload.userId).select(
+      "name email _id emailVerified encryptionSalt"
+    );
 
     if (!user) {
       res.status(404).json({ message: "User not found." });
       return;
     }
 
-    res.status(200).json({ user });
+    res.status(200).json({
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        emailVerified: user.emailVerified,
+        hasMasterPassword: !!user.encryptionSalt, // or however you check this
+      },
+    });
   } catch (error) {
     res.status(403).json({ message: "Invalid or expired token." });
   }

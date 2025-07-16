@@ -60,19 +60,29 @@ export const getCurrentUser = async () => {
 };
 
 export const verifyEmail = async (token: string) => {
-  const response = await fetch(`${API_BASE_AUTH}/verify-email?token=${token}`, {
-    method: "GET",
-    credentials: "include",
-  });
+  try {
+    const response = await fetch(
+      `${API_BASE_AUTH}/verify-email?token=${token}`,
+      {
+        method: "GET",
+        credentials: "include",
+      }
+    );
 
-  const data = await response.json();
+    const data = await response.json();
 
-  return {
-    ok: response.ok,
-    status: response.status,
-    message: data.message || "",
-    user: data.user || null,
-  };
+    return {
+      ok: response.ok,
+
+      message: data.message || "",
+    };
+  } catch (error) {
+    console.error("Verify Email failed:", error);
+    return {
+      ok: false,
+      message: "Something went wrong.",
+    };
+  }
 };
 
 export const resendVerificationEmail = async (email: string) => {
