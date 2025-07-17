@@ -10,6 +10,8 @@ import { generateAccessToken, generateRefreshToken } from "../utils/jwt";
 
 import { authenticateToken } from "../middleware/authMiddleware";
 
+import redis from "../utils/redisClient";
+
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import {
@@ -341,41 +343,59 @@ router.post("/reset-password", async (req: Request, res: Response) => {
 });
 
 router.post("/resend-verification", async (req: Request, res: Response) => {
+  const RESEND_LIMIT = 3; // max attempts
+  const RESEND_WINDOW_SECONDS = 60 * 60;
   const { email } = req.body;
 
   if (!email) {
     res.status(400).json({ message: "Email is required." });
     return;
   }
+  const redisKey = `resend_verification:${email}`;
 
-  const user = await User.findOne({ email });
+  try {
+    const count = await redis.get(redisKey);
+    if (count && parseInt(count) >= RESEND_LIMIT) {
+      res.status(429).json({
+        message:
+          "Too many verification email requests. Please try again later.",
+      });
+      return;
+    }
 
-  if (!user) {
-    res
-      .status(404)
-      .json({ message: "If user exists, verification email has been sent." });
-    return;
-  }
+    const user = await User.findOne({ email });
 
-  if (user.emailVerified) {
-    res.status(400).json({
-      message:
-        "If your email is not verified, you will receive a new link now, or else you can just signin using your credentials.",
+    if (!user) {
+      res
+        .status(404)
+        .json({ message: "If user exists, verification email has been sent." });
+      return;
+    }
+    if (user.emailVerified) {
+      res.status(400).json({
+        message:
+          "If your email is not verified, you will receive a new link now, or else you can just signin using your credentials.",
+      });
+      return;
+    }
+    const token = crypto.randomBytes(32).toString("hex");
+    user.emailVerificationToken = token;
+    user.emailVerificationTokenExpires = new Date(Date.now() + TOKEN_EXPIRY);
+    await user.save();
+    await sendVerificationEmail(user.email, token);
+
+    if (count) {
+      await redis.incr(redisKey);
+    } else {
+      await redis.set(redisKey, "1", "EX", RESEND_WINDOW_SECONDS);
+    }
+    res.status(200).json({
+      message: "Verification email sent on your email.",
     });
-    return;
+  } catch (error) {
+    console.error("Error resending verification email: ", error);
+    res.status(500).json({ message: "Internal server error." });
   }
-
-  const token = crypto.randomBytes(32).toString("hex");
-  user.emailVerificationToken = token;
-  user.emailVerificationTokenExpires = new Date(Date.now() + TOKEN_EXPIRY);
-  await user.save();
-
-  await sendVerificationEmail(user.email, token);
-
-  res.status(200).json({
-    message: "If your email is not verified, a new link will be sent.",
-  });
-  return;
 });
 
 export default router;

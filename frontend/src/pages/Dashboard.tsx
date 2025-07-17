@@ -25,19 +25,19 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // const handleResendVerification = async () => {
-  //   try {
-  //     const res = await resendVerificationEmail();
-  //     if (res.ok) {
-  //       alert("Verification email resent. Please check your inbox.");
-  //     } else {
-  //       alert(res.message || "Failed to resend verification email.");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error resending verification email:", error);
-  //     alert("Something went wrong. Try again later.");
-  //   }
-  // };
+  const handleResendVerification = async () => {
+    try {
+      const res = await resendVerificationEmail(user!.email);
+      if (res.ok) {
+        alert("Verification email resent. Please check your inbox.");
+      } else {
+        alert(res.message || "Failed to resend verification email.");
+      }
+    } catch (error) {
+      console.error("Error resending verification email:", error);
+      alert("Something went wrong. Try again later.");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-sky-100 flex flex-col items-center px-6 py-10">
@@ -68,12 +68,15 @@ const Dashboard: React.FC = () => {
         {user?.emailVerified === false && (
           <div className="bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded-md mb-4 shadow-md">
             <p>
-              Your email is <strong>not verified</strong>.{" "}
+              Your email is <strong>not verified</strong>. Please click the link
+              sent to you on your registered email. If you did not get the
+              email,{" "}
               <button
-                // onClick={handleResendVerification}
-                className="underline text-sky-800 font-medium hover:text-sky-900"
+                type="button"
+                onClick={handleResendVerification}
+                className="underline text-sky-800 font-medium hover:text-sky-900 cursor-pointer"
               >
-                Verify now
+                Click here
               </button>
             </p>
           </div>
@@ -81,17 +84,22 @@ const Dashboard: React.FC = () => {
 
         <div className="space-y-4">
           <button
-            onClick={() => navigate("/dashboard/credential-vault")}
+            onClick={() => {
+              if (!user?.emailVerified && user?.hasMasterPassword === false) {
+                alert(
+                  "Please verify your email and set your master password first."
+                );
+              } else if (!user?.emailVerified) {
+                alert("Please verify your email first.");
+              } else if (user?.hasMasterPassword === false) {
+                alert("Please set your master password first.");
+              } else {
+                navigate("/dashboard/credential-vault");
+              }
+            }}
             className="w-full bg-sky-700 text-white text-lg font-semibold py-3 rounded-lg shadow-md hover:bg-sky-800 transition-all"
           >
             🔐 Go to Credential Vault
-          </button>
-
-          <button
-            onClick={handleSignout}
-            className="w-full bg-red-500 text-white text-md font-medium py-2 rounded-lg shadow hover:bg-red-600 transition-all"
-          >
-            Sign Out
           </button>
         </div>
       </div>
