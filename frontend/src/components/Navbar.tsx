@@ -21,6 +21,7 @@ const Navbar: React.FC = () => {
 
   const isDashboard = location.pathname === "/dashboard";
   const isVault = location.pathname === "/dashboard/credential-vault";
+  const isAccount = location.pathname === "/dashboard/account";
 
   return (
     <nav className="bg-sky-700 text-white p-4 flex justify-between items-center shadow">
@@ -28,7 +29,7 @@ const Navbar: React.FC = () => {
         Fortify
       </Link>
       <div>
-        {isLoggedIn && isVault && (
+        {isLoggedIn && (isVault || isAccount) && (
           <Link
             to="/dashboard"
             className="bg-sky-600 hover:bg-sky-800 text-white px-4 py-1  rounded transition-colors duration-200"
@@ -36,7 +37,15 @@ const Navbar: React.FC = () => {
             Dashboard
           </Link>
         )}
-        {isLoggedIn && (isDashboard || isVault) && (
+        {isLoggedIn && isDashboard && (
+          <Link
+            to="/dashboard/account"
+            className="bg-sky-600 hover:bg-sky-800 text-white px-4 py-1  rounded transition-colors duration-200"
+          >
+            Account
+          </Link>
+        )}
+        {isLoggedIn && (isDashboard || isVault || isAccount) && (
           <button
             onClick={handleSignout}
             className="ml-3 bg-red-500 hover:bg-red-600 px-3 py-1 rounded text-white transition-colors duration-200"

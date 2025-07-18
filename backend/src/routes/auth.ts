@@ -37,7 +37,7 @@ const accessTokenCookieOptions = {
   maxAge: 15 * 60 * 1000,
 };
 
-const TOKEN_EXPIRY = 1000 * 60 * 2;
+const TOKEN_EXPIRY = 1000 * 60 * 300;
 
 router.post("/signup", async (req: Request, res: Response) => {
   const { name, email, password } = req.body;

@@ -7,6 +7,7 @@ import CredentialVault from "./pages/CredentialVault";
 import Navbar from "./components/Navbar";
 import NotFound from "./pages/NotFound";
 import VerifyEmail from "./pages/VerifyEmail";
+import AccountPage from "./pages/AccountPage";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isLoggedIn } = useAuth();
@@ -49,6 +50,14 @@ const App = () => {
           element={
             <ProtectedRoute>
               <CredentialVault />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/account"
+          element={
+            <ProtectedRoute>
+              <AccountPage />
             </ProtectedRoute>
           }
         />
