@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { signin, signup } from "../services/authServices";
 import { useAuth } from "../contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Home: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -140,6 +140,17 @@ const Home: React.FC = () => {
               {isLogin ? "Register" : "Login"}
             </button>
           </p>
+          {isLogin && (
+            <p className="text-center mt-4 text-sm text-gray-600">
+              Forgot your password.{" "}
+              <Link
+                to="/forgot-password"
+                className="text-sky-700 font-semibold hover:underline"
+              >
+                Click Here
+              </Link>
+            </p>
+          )}
         </div>
       </div>
     </div>

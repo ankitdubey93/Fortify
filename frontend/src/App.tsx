@@ -8,6 +8,8 @@ import Navbar from "./components/Navbar";
 import NotFound from "./pages/NotFound";
 import VerifyEmail from "./pages/VerifyEmail";
 import AccountPage from "./pages/AccountPage";
+import ResetPassword from "./pages/ResetPassword";
+import ForgotPassword from "./pages/ForgotPassword";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isLoggedIn } = useAuth();
@@ -26,7 +28,7 @@ const App = () => {
     <Routes>
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />
-
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route
           path="/set-master-password"
@@ -58,6 +60,14 @@ const App = () => {
           element={
             <ProtectedRoute>
               <AccountPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/account/reset-password"
+          element={
+            <ProtectedRoute>
+              <ResetPassword />
             </ProtectedRoute>
           }
         />

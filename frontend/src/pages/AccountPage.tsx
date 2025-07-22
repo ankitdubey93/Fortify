@@ -60,7 +60,7 @@ const AccountPage: React.FC = () => {
 
       <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
         <button
-          onClick={() => navigate("/reset-password")}
+          onClick={() => navigate("/dashboard/account/reset-password")}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
         >
           Reset Password
