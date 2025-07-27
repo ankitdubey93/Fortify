@@ -106,6 +106,7 @@ export const resendVerificationEmail = async (email: string) => {
 
 export const sendPasswordResetLink = async (email: string) => {
   const response = await fetch(`${API_BASE_AUTH}/forgot-password`, {
+    method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
@@ -114,3 +115,16 @@ export const sendPasswordResetLink = async (email: string) => {
 
   return await response.json();
 };
+
+
+export const resetForgottenPassword = async (token: string, newPassword: string) => {
+   const response = await fetch(`${API_BASE_AUTH}/reset-password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ token, newPassword}),
+  });
+
+  return await response.json();
+}

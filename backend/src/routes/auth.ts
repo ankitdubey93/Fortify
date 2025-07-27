@@ -305,7 +305,7 @@ router.post("/forgot-password", async (req: Request, res: Response) => {
 
     res
       .status(200)
-      .json({ message: "If user exists, reset linke has been sent." });
+      .json({ message: "If user exists, reset link has been sent." });
   } catch (error) {
     console.error("Error resetting password", error);
     res.status(500).json({ message: "Internal server error." });

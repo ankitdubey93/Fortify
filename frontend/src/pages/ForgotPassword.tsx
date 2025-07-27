@@ -5,25 +5,31 @@ const ForgotPassword: React.FC = () => {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage("");
     setError("");
-    setLoading(true);
 
     try {
       const response = await sendPasswordResetLink(email);
+
+      
+
       setMessage(response.message);
-    } catch (error: unknown) {
-      setError(
-        error.response?.data?.message ||
-          "Something went wrong. Please try again later."
-      );
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      if(error instanceof Error) {
+        setError(error.message || "Error resetting password.");
+      } else {
+
+        setError("Error resetting password.")
+      }
+
     }
+   
+
+    
   };
   return (
     <div className="min-h-[calc(100vh-44px)] flex justify-center items-center">
@@ -39,10 +45,8 @@ const ForgotPassword: React.FC = () => {
             className="w-full px-4 py-2 border rounded focus:outline-none focus:ring focus:border-sky-500"
             required
           />
-
-          {error && (
-            <p className="text-red-600 text-sm font-semibold">{error}</p>
-          )}
+{error && <p className="text-red-600 text-sm font-semibold">{error}</p>}
+{message && <p className="text-green-600 text-sm font-semibold">{message}</p>}
 
           <button
             type="submit"

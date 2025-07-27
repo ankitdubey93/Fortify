@@ -10,6 +10,7 @@ import VerifyEmail from "./pages/VerifyEmail";
 import AccountPage from "./pages/AccountPage";
 import ResetPassword from "./pages/ResetPassword";
 import ForgotPassword from "./pages/ForgotPassword";
+import ResetForgottenPassword from "./pages/ResetForgottenPassword";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isLoggedIn } = useAuth();
@@ -30,6 +31,7 @@ const App = () => {
         <Route path="/" element={<Home />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/reset-password" element={<ResetForgottenPassword />} />
         <Route
           path="/set-master-password"
           element={
