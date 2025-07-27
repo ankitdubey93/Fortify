@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { changePasswordLoggedIn } from "../services/dashServices";
 
 const ResetPassword: React.FC = () => {
   const [oldPassword, setOldPassword] = useState("");
@@ -13,8 +14,31 @@ const ResetPassword: React.FC = () => {
     setSuccess("");
 
     if (newPassword !== confirmNewPassword) {
-      setError("New password do not match.");
+      setError("New passwords do not match.");
       return;
+    }
+
+    try {
+      const response = await changePasswordLoggedIn(oldPassword, newPassword);
+
+     
+
+      if(response.success) {
+        setSuccess(response.message || "Something went wrong.")
+        
+      } else {
+        setError(response.message)
+      }
+
+    setOldPassword("");
+    setNewPassword("");
+    setConfirmNewPassword("");
+    } catch (error) {
+      if(error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("An unexpected error occurred.")
+      }
     }
   };
   return (
@@ -22,13 +46,13 @@ const ResetPassword: React.FC = () => {
       <h1 className="text-4xl font-bold text-sky-800 mb-2">Reset Password</h1>
       <div className="flex-grow flex items-center justfiy-center">
         <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-md">
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSubmit}>
             <input
               type="password"
               name="oldPassword"
               placeholder="Old Password"
-              //   value={masterPassword}
-              //   onChange={(e) => setMasterPassword(e.target.value)}
+              value={oldPassword}
+              onChange={(e) => setOldPassword(e.target.value)}
               className="w-full px-4 py-2 border rounded focus:outline-none focus:ring focus:border-sky-500"
               required
             />
@@ -36,8 +60,8 @@ const ResetPassword: React.FC = () => {
               type="password"
               name="newPassword"
               placeholder="New Password"
-              //   value={masterPassword}
-              //   onChange={(e) => setMasterPassword(e.target.value)}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
               className="w-full px-4 py-2 border rounded focus:outline-none focus:ring focus:border-sky-500"
               required
             />
@@ -46,18 +70,20 @@ const ResetPassword: React.FC = () => {
               type="password"
               name="confirmNewPassword"
               placeholder="Confirm New Password"
-              //   value={confirmMasterPassword}
-              //   onChange={(e) => setConfirmMasterPassword(e.target.value)}
+               value={confirmNewPassword}
+               onChange={(e) => setConfirmNewPassword(e.target.value)}
               className="w-full px-4 py-2 border rounded focus:outline-none focus:ring focus:border-sky-500"
               required
             />
 
-            {/* {error && (
+             {error && (
               <p className="text-red-600 text-sm font-semibold">{error}</p>
-            )} */}
+            )}     
+            {success && <p className="text-green-600 text-sm font-semibold">{success}</p>}
 
             <button
               type="submit"
+              
               className="w-full bg-sky-700 text-white py-2 rounded hover:bg-sky-800 transition"
             >
               Submit

@@ -2,6 +2,7 @@ import express from "express";
 import { authenticateToken, AuthRequest } from "../middleware/authMiddleware";
 import { User } from "../models/User";
 import VaultRouter from "./credentialVault";
+import bcrypt from "bcrypt";
 
 const authenticatedRouter = express.Router();
 
@@ -176,6 +177,46 @@ authenticatedRouter.post(
     }
   }
 );
+
+authenticatedRouter.post("/reset-password", async (req:AuthRequest, res: express.Response) => {
+  if(!req.user) {
+    res.status(401).json({message: "Unauthorized."})
+    return;
+  }
+
+  const {oldPassword, newPassword} = req.body;
+
+
+  if(!oldPassword || !newPassword) {
+    res.status(400).json({message: "Old and new passwords are required."})
+    return;
+  }
+
+  try {
+    const user = await User.findById(req.user.userId);
+
+    if(!user) {
+      res.status(404).json({message: "User not found."});
+      return;
+    }
+
+    const passwordMatch = await bcrypt.compare(oldPassword, user.password);
+
+    if(!passwordMatch) {
+      res.status(401).json({message: "Old password is incorrect."});
+      return;
+    }
+
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedNewPassword;
+    await user.save();
+
+    res.status(200).json({message:"Password updated successfully."})
+  } catch (error) {
+    console.error("Password reset error:", error);
+    res.status(500).json({message:"Internal server error."})
+  }
+});
 
 authenticatedRouter.get(
   "/salt",

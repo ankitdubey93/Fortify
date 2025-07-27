@@ -61,3 +61,28 @@ export const getEncryptionSalt = async () => {
   console.log(result);
   return result;
 };
+
+
+export const changePasswordLoggedIn = async (oldPassword: string, newPassword: string): Promise<{success: boolean; message:string}> => {
+  try {
+    const response = await fetch(`${API_BASE_DASH}/reset-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type":"application/json",
+        
+      },
+      body: JSON.stringify({oldPassword, newPassword}), 
+      credentials: "include",
+    });
+    const data = await response.json();
+    if(!response.ok) {
+      return {success: false, message: data.message || "Password reset failed."}
+    }
+      return {success: true, message: data.message || "Password reset successfully."};
+    
+
+  } catch (error) {
+    console.error("Reset password error: ", error);
+    return {success: false, message: "Something went wrong."}
+  }
+}
