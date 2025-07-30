@@ -1,10 +1,10 @@
 import { useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { signout, resendVerificationEmail } from "../services/authServices";
+import {  resendVerificationEmail } from "../services/authServices";
 
 const Dashboard: React.FC = () => {
-  const { user, setUser, setIsLoggedIn, refreshUserDetails } = useAuth();
+  const { user,  refreshUserDetails } = useAuth();
 
   const navigate = useNavigate();
 
@@ -13,17 +13,7 @@ const Dashboard: React.FC = () => {
     refreshUserDetails();
   }, []);
 
-  const handleSignout = async () => {
-    try {
-      await signout();
-      setUser(null);
-      setIsLoggedIn(false);
-      navigate("/");
-    } catch (error) {
-      console.error("Signout failed:", error);
-      alert("Failed to sign out. Try again.");
-    }
-  };
+  
 
   const handleResendVerification = async () => {
     try {
