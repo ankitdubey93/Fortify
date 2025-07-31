@@ -21,7 +21,8 @@
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.10.0",
     "mongoose": "^8.8.1",
-    "nodemailer": "^7.0.5"
+    "nodemailer": "^7.0.5",
+    "pm2": "^6.0.8"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
