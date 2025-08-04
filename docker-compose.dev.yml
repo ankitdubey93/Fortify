@@ -1,19 +1,17 @@
-version: '3.8'
+version: "3.8"
 
 services:
   mongodb:
     image: mongo
     container_name: mongodb
-    restart: always
     ports:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
 
   redis:
-    image: redis:alpine
+    image: redis
     container_name: redis
-    restart: always
     ports:
       - "6379:6379"
 
