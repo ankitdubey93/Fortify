@@ -1,81 +1,127 @@
-# 🔐 Fortify – Your Secure Password Vault
+🔐 Fortify – Your Secure Password Vault
+🚀 Live Demo:
+Deployed on AWS Lightsail at https://13.232.184.165
 
-Fortify is a zero-knowledge, client-side encrypted password manager built using the MERN stack (MongoDB, Express, React, Node.js). It allows you to securely store and manage sensitive information — including login credentials, ATM PINs, banking passwords, and crypto wallet seeds — with strong cryptography and modern authentication.
+Note: Uses a self-signed SSL certificate.
 
----
+You must proceed past the browser "Not Secure" warning to access the app.
 
-##  Features
+Fortify is a zero-knowledge, client-side encrypted password manager built with the MERN stack (MongoDB, Express, React, Node.js). Store, organize, and secure your most sensitive credentials with modern cryptography – your secrets remain private, even if the server is compromised.
 
--  Zero-knowledge encryption: only you can decrypt your data
--  Client-side AES-GCM encryption using master password
--  Master password never leaves your device
--  PBKDF2 or Argon2id for secure key derivation
--  Store multiple types of secrets:
-  - Website credentials
-  - ATM PINs (4 & 6 digits)
-  - Internet banking passwords
-  - Wallet passphrases
-  - Crypto wallet seed phrases
--  Sign up → Set master password flow
--  HTTP-only cookies for secure access/refresh token auth
--  Seamless auto-refresh token system
--  Protected routes with full CRUD for vault entries
--  Clean UI with Tailwind CSS and ShadCN UI
--  Responsive React + TypeScript frontend
+✨ Features
+Zero-knowledge encryption:
+Only you can decrypt your data; even the server cannot.
 
----
+Client-side AES-GCM encryption:
+All sensitive info (passwords, PINs, seeds) is AES-GCM encrypted before leaving your device.
 
-##  Tech Stack
+Master password stays local:
+Never transmitted—cryptographic keys derived in-browser (using PBKDF2 or Argon2id).
 
-### Frontend
-- React + TypeScript
-- Context API for auth and encryption key state
-- AES-GCM via Web Crypto API
-- PBKDF2 and Argon2id with `argon2-browser`
-- Tailwind CSS + ShadCN UI components
+Diverse secret types:
 
-### Backend
-- Node.js + Express + TypeScript
-- MongoDB with Mongoose
-- Bcrypt for password hashing
-- JWTs for access/refresh tokens
-- HTTP-only cookie-based auth
-- Secure route protection and session handling
+Website credentials
 
----
+ATM PINs (4 & 6 digits)
 
-## 🔐 Zero-Knowledge Encryption
+Internet banking passwords
 
-Fortify is built with **zero-knowledge principles**, meaning **even the server cannot access your encrypted data**.
+Wallet passphrases
 
-### How it works:
-- Your **master password is never sent to the server**.
-- It is used **in the browser** to derive an encryption key (via **PBKDF2** or **Argon2id**) along with a unique salt.
-- All sensitive data is encrypted **client-side using AES-GCM** before being sent to the server.
-- The server only stores **ciphertext**, never raw data or passwords.
-- Even if your database is breached, **no one can decrypt your data without your master password**.
+Crypto wallet seed phrases
 
----
+Authentication:
 
-##  Getting Started
+Secure, HTTP-only cookie-based session management (JWT access/refresh tokens)
 
-### Prerequisites
-- Node.js (v18+)
-- MongoDB (local or cloud)
-- Yarn or npm
+Seamless token refresh for enhanced UX
 
----
+Protected API routes and CRUD for vault entries
 
-### 1. Clone the Repository
+Modern, responsive UI:
 
-```bash
+Built with React, TypeScript, Tailwind CSS, and ShadCN UI for a clean, fast experience.
+
+Password reset ability:
+
+Reset from "Forgot Password" on the login page (sends a reset link to your email).
+
+Alternatively, reset from "Accounts" while logged in: simply provide your old password and set a new one.
+
+⚡ Tech Stack
+Frontend
+React + TypeScript
+
+Context API (for authentication and encryption state)
+
+AES-GCM via Web Crypto API
+
+PBKDF2 & Argon2id with argon2-browser
+
+Tailwind CSS & ShadCN UI components
+
+Backend
+Node.js + Express + TypeScript
+
+MongoDB (with Mongoose)
+
+Bcrypt for password hashing
+
+JWT (access & refresh tokens)
+
+HTTP-only cookie-based authentication
+
+Robust session management & route protection
+
+🔒 How Zero-Knowledge Encryption Works
+Master Password Never Leaves Your Browser:
+Used to generate your encryption key locally.
+
+Client-side Encryption:
+Sensitive data is AES-GCM encrypted in-browser before transmission.
+
+Unique Salt and Secure Key Derivation:
+PBKDF2/Argon2id + per-user salt.
+
+Only Ciphertext on Server:
+Database breach? Attackers can’t decrypt a thing without your master password.
+
+🚦 Getting Started
+Prerequisites
+Node.js (v18+)
+
+MongoDB (local or Atlas/cloud)
+
+Yarn or npm
+
+1. Clone the Repository
+bash
 git clone https://github.com/your-username/fortify.git
 cd fortify
+Configure your .env files for backend and frontend as needed.
 
+🔄 New: Automatic GitHub Actions Deployment
+The production deployment to AWS Lightsail (https://13.232.184.165) triggers automatically on each main branch push.
 
-🛠 Planned Features
-Entry export/import (JSON, .kdbx)
-Biometric login with WebAuthn
-Progressive Web App (PWA) support
-Vault usage insights and logs
-Browser Integration
+Code updates, builds, and Docker Compose restarts are handled by a CI workflow via SSH.
+
+🔐 Account & Password Recovery
+Forgot your password? Use the "Forgot Password" link on the login page – enter your email to receive a reset link.
+
+Logged in, want to change your password?
+Visit the Accounts page, enter your old password, and set a new one—secure, no email needed.
+
+🛣️ Planned Features
+Vault entry export/import (JSON, .kdbx)
+
+Biometric login (WebAuthn)
+
+PWA – Offline vault use
+
+Usage insights & access logs
+
+Browser extension for autofill
+
+Security first, privacy by design. Built for you, not for data harvesters.
+
+Questions? Feature requests? Issues? Open an issue or reach out!
