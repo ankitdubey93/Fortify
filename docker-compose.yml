@@ -21,6 +21,8 @@ services:
     depends_on:
       - mongo
       - redis
+    volumes:
+      - ./nginx/certs:/etc/ssl/selfsigned:ro  
     networks:
       - fortify-net
     expose:
@@ -49,7 +51,9 @@ services:
     volumes:
       - frontend_build:/usr/share/nginx/html:ro
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
     ports:
+      - "443:443"
       - "80:80"
     networks:
       - fortify-net

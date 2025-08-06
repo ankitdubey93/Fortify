@@ -64,12 +64,12 @@ let credentials: { key: string; cert: string } | undefined;
 // Load SSL cert and key
 try {
   const privateKey = fs.readFileSync(
-    path.join("/etc/ssl/selfsigned/selfsigned.key"),
+    path.join("/etc/ssl/selfsigned/nginx-selfsigned.key"),
     "utf8"
   );
 
   const certificate = fs.readFileSync(
-    path.join("/etc/ssl/selfsigned/selfsigned.crt"),
+    path.join("/etc/ssl/selfsigned/nginx-selfsigned.crt"),
     "utf8"
   );
 
