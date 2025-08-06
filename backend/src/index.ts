@@ -45,8 +45,10 @@ import authRouter from "./routes/auth";
 import authenticatedRouter from "./routes/authenticatedRoutes";
 
 const app = express();
+app.set('trust proxy', 1); // One if Nginx is directly in front
 
-const PORT = process.env.PORT || 3000;
+
+const PORT = Number(process.env.PORT) || 3000;
 
 const allowedOrigin = process.env.FRONTEND_URL;
 
@@ -115,12 +117,12 @@ const startServer = async () => {
 
     if (process.env.NODE_ENV === "production" && credentials) {
       const httpsServer = https.createServer(credentials, app);
-      httpsServer.listen(PORT, () => {
+      httpsServer.listen(PORT,'0.0.0.0' ,() => {
         console.log(`HTTPS Server running on PORT ${PORT}`);
       });
     } else {
       const httpServer = http.createServer(app);
-      httpServer.listen(PORT, () => {
+      httpServer.listen(PORT, '0.0.0.0', () => {
         console.log(`HTTP Server running on http://localhost:${PORT}`);
       });
     }
