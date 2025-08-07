@@ -79,7 +79,7 @@ try {
   console.log("SSL certificates loaded successfully.");
 } catch (error) {
   console.warn(
-    "Could not load SSL certificates. This is expected if running in development without self-signed certificates. Server will attempt to start wihtout them."
+    "Could not load SSL certificates. This is expected if running in development without self-signed certificates. Server will attempt to start without them."
   );
 }
 
