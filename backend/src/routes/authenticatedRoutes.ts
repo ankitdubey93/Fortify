@@ -247,4 +247,48 @@ authenticatedRouter.get(
   }
 );
 
+authenticatedRouter.post("/reset-master-password", async (req:AuthRequest, res: express.Response) => {
+  if(!req.user) {
+    res.status(401).json({message: "Unauthorized."})
+    return;
+    
+  }
+
+  const userId = req.user.userId;
+  const {
+    oldPassword, newEncryptionSalt, newKeyDerivationMethod, newVerification, reEncryptedEntries,
+  } = req.body;
+
+  if(!oldPassword || !newEncryptionSalt || !newKeyDerivationMethod || !newVerification || !reEncryptedEntries) {
+    res.status(404).json({message: "Missing required fields."})
+    return;
+  }
+
+  try {
+      const user = await User.findById(userId);
+      if(!user) {
+  
+      res.status(404).json({message: "User not found."});
+      return;
+
+      }
+
+  
+      user.encryptionSalt = newEncryptionSalt;
+      user.keyDerivationMethod = newKeyDerivationMethod;
+      user.verification = newVerification;
+    
+      user.data = reEncryptedEntries;
+    
+      await user.save();
+    
+      res.status(200).json({message: "Master password reset successful"})
+      return;
+  } catch (error) {
+    console.error("Error resetting master password:", error);
+    res.status(500).json({message: "Internal server error."})
+    return;
+  }
+});
+
 export default authenticatedRouter;

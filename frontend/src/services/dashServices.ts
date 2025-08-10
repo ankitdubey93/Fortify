@@ -86,3 +86,5 @@ export const changePasswordLoggedIn = async (oldPassword: string, newPassword: s
     return {success: false, message: "Something went wrong."}
   }
 }
+
+export const resetMasterPassword = async ()
