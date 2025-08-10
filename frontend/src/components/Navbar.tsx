@@ -23,6 +23,7 @@ const Navbar: React.FC = () => {
   const isVault = location.pathname === "/dashboard/credential-vault";
   const isAccount = location.pathname === "/dashboard/account";
   const isResetPassword = location.pathname === "/dashboard/account/reset-password"
+   const isMasterPasswordReset = location.pathname === "/dashboard/account/reset-master-password"
 
   return (
     <nav className="bg-sky-700 text-white p-4 flex justify-between items-center shadow">
@@ -30,7 +31,7 @@ const Navbar: React.FC = () => {
         Fortify
       </Link>
       <div>
-        {isLoggedIn && (isVault || isAccount || isResetPassword) && (
+        {isLoggedIn && (isVault || isAccount || isResetPassword || isMasterPasswordReset) && (
           <Link
             to="/dashboard"
             className="bg-sky-600 hover:bg-sky-800 text-white px-4 py-1  rounded transition-colors duration-200"
@@ -38,7 +39,7 @@ const Navbar: React.FC = () => {
             Dashboard
           </Link>
         )}
-        {isLoggedIn && (isDashboard || isResetPassword) && (
+        {isLoggedIn && (isDashboard || isResetPassword || isMasterPasswordReset) && (
           <Link
             to="/dashboard/account"
             className="bg-sky-600 hover:bg-sky-800 text-white px-4 py-1 ml-2 rounded transition-colors duration-200"
@@ -46,7 +47,7 @@ const Navbar: React.FC = () => {
             Account
           </Link>
         )}
-        {isLoggedIn && (isDashboard || isVault || isAccount || isResetPassword) && (
+        {isLoggedIn && (isDashboard || isVault || isAccount || isResetPassword || isMasterPasswordReset) && (
           <button
             onClick={handleSignout}
             className="ml-3 bg-red-500 hover:bg-red-600 px-3 py-1 rounded text-white transition-colors duration-200"

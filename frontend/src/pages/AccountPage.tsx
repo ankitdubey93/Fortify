@@ -66,7 +66,7 @@ const AccountPage: React.FC = () => {
           Reset Password
         </button>
         <button
-          onClick={() => navigate("/reset-master-password")}
+          onClick={() => navigate("/dashboard/account/reset-master-password")}
           className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
         >
           Reset Master Password

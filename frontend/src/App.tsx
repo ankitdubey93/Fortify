@@ -11,6 +11,7 @@ import AccountPage from "./pages/AccountPage";
 import ResetPassword from "./pages/ResetPassword";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetForgottenPassword from "./pages/ResetForgottenPassword";
+import MasterPasswordReset from "./pages/MasterPasswordReset";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isLoggedIn } = useAuth();
@@ -70,6 +71,14 @@ const App = () => {
           element={
             <ProtectedRoute>
               <ResetPassword />
+            </ProtectedRoute>
+          }
+        />
+         <Route
+          path="/dashboard/account/reset-master-password"
+          element={
+            <ProtectedRoute>
+              <MasterPasswordReset />
             </ProtectedRoute>
           }
         />
