@@ -1,11 +1,19 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { getEncryptionSalt, sendMasterPasswordReset } from '../services/dashServices';
+import { getEncryptionSalt, restoreVault, sendMasterPasswordReset } from '../services/dashServices';
 import { base64ToBuffer, bufferToBase64, createHMAC, decryptData, encryptData, generateSalt } from '../utils/cryptoUtils';
 import { getEncryptedVault } from '../services/vaultservices';
 import { deriveKey } from '../utils/deriveKey';
 import { signout } from '../services/authServices';
+
+type VaultBackupData = {
+    entries: any[];
+    verification: {
+        secret: string;
+        hmac: string;
+    };
+};
 
 const MasterPasswordReset: React.FC = () => {
 
@@ -16,6 +24,9 @@ const MasterPasswordReset: React.FC = () => {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const [loading, setLoading] = useState(false); // optional, for UX
+     const [vaultBackup, setVaultBackup] = useState<VaultBackupData | null>(null);
+
+
     const navigate = useNavigate();
     const { logout } = useAuth();
 
@@ -46,7 +57,15 @@ const MasterPasswordReset: React.FC = () => {
                 throw new Error("Old master password verification failed.");
             }
 
+
+    
+
             const encryptedVault = await getEncryptedVault();
+            setVaultBackup({
+                entries: encryptedVault.data,
+                verification: { secret: verification.secret, hmac: verification.hmac },
+            });
+
             const decryptedEntries = await Promise.all(encryptedVault.data.map(async (entry: any) => {
                 const decryptedWebsite = await decryptData(entry.website.cipherText, entry.website.iv, oldAesKey);
                 const decryptedUsername = await decryptData(entry.username.cipherText, entry.username.iv, oldAesKey);
@@ -69,12 +88,19 @@ const MasterPasswordReset: React.FC = () => {
             const newVerificationText = crypto.randomUUID();
             const newHmac = await createHMAC(newHmacKey, newVerificationText);
 
+            // await sendMasterPasswordReset(
+            //     bufferToBase64(newSalt),
+            //     method,
+            //     { secret: newVerificationText, hmac: newHmac },
+            //     reEncryptedEntries
+            // );
+
             await sendMasterPasswordReset(
-                bufferToBase64(newSalt),
-                method,
-                { secret: newVerificationText, hmac: newHmac },
-                reEncryptedEntries
-            );
+  "INVALID_SALT", // wrong salt
+  method,
+  { secret: "bad", hmac: "bad" }, // wrong verification
+  [] // empty array just to force failure
+);
 
             setSuccess("Master password reset successfully. You will be logged out.");
             setTimeout(() => {
@@ -85,6 +111,14 @@ const MasterPasswordReset: React.FC = () => {
         }
         catch (error: any) {
             setError(error?.message || "An unexpected error occurred.");
+            if(vaultBackup) {
+                try {
+                    await restoreVault(vaultBackup);
+                    console.log("Vault + verification restored successfully from backup.")
+                } catch (restoreErr) {
+                    console.error("Vault restore failed:", restoreErr);
+                }
+            }
         } finally {
             setLoading(false);
         }

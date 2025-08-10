@@ -124,3 +124,23 @@ export const sendMasterPasswordReset = async ( newEncryptionSalt: string, newKey
     return {success: false, message: "Something went wrong."};
   }
 };
+
+export const restoreVault = async (backupData: {entries: any[];verification: {
+  secret: string; hmac: string
+}}) => {
+  const response = await fetch(`${API_BASE_DASH}/restore-vault-data`, 
+    {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(backupData),
+    },
+
+  );
+
+  const data = await response.json();
+ if (!response.ok) throw new Error(data?.message || "Failed to restore vault/verification.");
+  return data;
+}
