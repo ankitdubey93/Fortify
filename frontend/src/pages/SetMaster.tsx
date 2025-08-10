@@ -108,6 +108,24 @@ const SetMaster: React.FC = () => {
               <option value="pbkdf2">PBKDF2</option>
               <option value="argon2id">Argon2id</option>
             </select>
+            <div className="mt-2 mb-4 bg-sky-50 border border-sky-200 rounded p-3 text-left text-gray-700 text-sm">
+              <div className="font-semibold mb-1">Password Derivation Methods</div>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>
+                  <strong>PBKDF2</strong>: A widely used and tested standard that
+                  applies many hashing rounds to slow brute-force attacks.
+                </li>
+                <li>
+                  <strong>Argon2id</strong>: A modern, memory-hard function designed
+                  to resist GPU and ASIC attacks by requiring significant time and
+                  memory.
+                </li>
+                <li>
+                  Both methods are secure; however, <strong>Argon2id</strong> offers
+                  stronger protection against modern hardware attacks.
+                </li>
+              </ul>
+            </div>
 
             {error && (
               <p className="text-red-600 text-sm font-semibold">{error}</p>
