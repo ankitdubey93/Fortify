@@ -86,3 +86,41 @@ export const changePasswordLoggedIn = async (oldPassword: string, newPassword: s
     return {success: false, message: "Something went wrong."}
   }
 }
+
+
+export const sendMasterPasswordReset = async ( newEncryptionSalt: string, newKeyDerivationMethod:string,
+  newVerification: {
+    secret: string;
+    hmac: string;
+  },
+  reEncryptedEntries: any[]
+):Promise<{success: boolean; message: string}> => {
+  try {
+    const response = await fetch(`${API_BASE_DASH}/reset-master-password`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      }, 
+      body: JSON.stringify({
+        
+        newEncryptionSalt, 
+        newKeyDerivationMethod,
+        newVerification, 
+        reEncryptedEntries,
+      }),
+    });
+
+    const data = await response.json(); 
+
+    if(!response.ok) {
+      return {success: false, message: data.message || "Failed to reset master password."};
+    }
+
+    return {success: true, message: data.message || "Master password reset successfully."};
+
+  } catch (error) {
+    console.error("Reset master password error:", error);
+    return {success: false, message: "Something went wrong."};
+  }
+};
