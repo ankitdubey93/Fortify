@@ -16,6 +16,8 @@ interface AuthContextType {
   setUser: (user: User | null) => void;
   setIsLoggedIn: (loggedIn: boolean) => void;
   refreshUserDetails: () => Promise<void>;
+  logout: () => void;
+
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -42,6 +44,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     await fetchUser(); // Reuse same function
   };
 
+   const logout = () => {
+    // Optional: await logoutApi(); // Call backend logout to clear session
+    setUser(null);
+    setIsLoggedIn(false);
+    // If using localStorage or cookies for tokens, clear them here
+  };
+
+
   // Check if the user is already logged in (on initial load)
   useEffect(() => {
     const checkAuth = async () => {
@@ -56,7 +66,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <AuthContext.Provider
-      value={{ user, isLoggedIn, setUser, setIsLoggedIn, refreshUserDetails }}
+      value={{ user, isLoggedIn, setUser, setIsLoggedIn, refreshUserDetails, logout }}
     >
       {children}
     </AuthContext.Provider>

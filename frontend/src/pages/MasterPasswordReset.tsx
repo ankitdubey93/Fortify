@@ -3,10 +3,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { getEncryptionSalt } from '../services/dashServices';
+import { getEncryptionSalt, sendMasterPasswordReset } from '../services/dashServices';
 import { base64ToBuffer, bufferToBase64, createHMAC, decryptData, encryptData, generateSalt } from '../utils/cryptoUtils';
 import { getEncryptedVault } from '../services/vaultservices';
 import { deriveKey } from '../utils/deriveKey';
+import { signout } from '../services/authServices';
 
 
 
@@ -19,7 +20,7 @@ const MasterPasswordReset: React.FC = () => {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const navigate = useNavigate();
-    const {setIsLoggedIn, setUser} = useAuth();
+    const { logout} = useAuth();
 
     const handleSubmit = async (e:React.FormEvent) => {
         e.preventDefault();
@@ -82,9 +83,9 @@ const MasterPasswordReset: React.FC = () => {
 
       // Optional: log the user out or update auth state
       setSuccess("Master password reset successfully.");
-      setIsLoggedIn(false);
-      setUser(null);
-      navigate("/login", { replace: true });
+      logout();
+      signout();
+      navigate("/", { replace: true });
    
         }
         catch (error) {
@@ -126,7 +127,7 @@ const MasterPasswordReset: React.FC = () => {
                 className='w-full border p-2 rounded'
                 >
                     <option>PBKDF2</option>
-                    <option>Argon2id</option>
+                    <option>argon2id</option>
                 </select>
                 {error && <p className="text-red-600 font-semibold">{error}</p>}
         {success && <p className="text-green-600 font-semibold">{success}</p>}

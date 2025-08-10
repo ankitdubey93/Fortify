@@ -256,10 +256,10 @@ authenticatedRouter.post("/reset-master-password", async (req:AuthRequest, res: 
 
   const userId = req.user.userId;
   const {
-    oldPassword, newEncryptionSalt, newKeyDerivationMethod, newVerification, reEncryptedEntries,
+     newEncryptionSalt, newKeyDerivationMethod, newVerification, reEncryptedEntries,
   } = req.body;
 
-  if(!oldPassword || !newEncryptionSalt || !newKeyDerivationMethod || !newVerification || !reEncryptedEntries) {
+  if( !newEncryptionSalt || !newKeyDerivationMethod || !newVerification || !reEncryptedEntries) {
     res.status(404).json({message: "Missing required fields."})
     return;
   }
