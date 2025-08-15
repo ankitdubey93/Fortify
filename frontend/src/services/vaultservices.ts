@@ -51,3 +51,5 @@ export const deleteEntry = async (entryId: string) => {
   if (!response.ok) throw new Error("Failed to delete entry");
   return response.json();
 };
+
+

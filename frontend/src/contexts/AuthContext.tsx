@@ -8,6 +8,7 @@ interface User {
   email: string;
   emailVerified: boolean;
   hasMasterPassword: boolean;
+  
 }
 
 interface AuthContextType {
