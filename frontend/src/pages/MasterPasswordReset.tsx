@@ -88,19 +88,13 @@ const MasterPasswordReset: React.FC = () => {
             const newVerificationText = crypto.randomUUID();
             const newHmac = await createHMAC(newHmacKey, newVerificationText);
 
-            // await sendMasterPasswordReset(
-            //     bufferToBase64(newSalt),
-            //     method,
-            //     { secret: newVerificationText, hmac: newHmac },
-            //     reEncryptedEntries
-            // );
-
             await sendMasterPasswordReset(
-  "INVALID_SALT", // wrong salt
-  method,
-  { secret: "bad", hmac: "bad" }, // wrong verification
-  [] // empty array just to force failure
-);
+                bufferToBase64(newSalt),
+                method,
+                { secret: newVerificationText, hmac: newHmac },
+                reEncryptedEntries
+            );
+
 
             setSuccess("Master password reset successfully. You will be logged out.");
             setTimeout(() => {
