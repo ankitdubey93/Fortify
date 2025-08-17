@@ -26,9 +26,14 @@ export interface User extends Document {
   passwordResetToken: string | null;
   passwordResetTokenExpires: Date | null;
   data: Types.DocumentArray<Entry>;
+  vaultBackup: Types.DocumentArray<Entry>;
   verification: {
-    secret: string;
-    hmac: string;
+    secret: string | null;
+    hmac: string | null;
+  };
+  verificationBackup: {
+    secret: string | null;
+    hmac: string | null;
   };
   createdAt: Date;
   updatedAt: Date;
@@ -72,7 +77,15 @@ const userSchema = new Schema<User>(
     passwordResetToken: { type: String, default: null },
     passwordResetTokenExpires: { type: Date, default: null },
     data: [entrySchema],
+      vaultBackup: {
+      type: [entrySchema],
+      default: [],
+    },
     verification: {
+      secret: { type: String, default: null },
+      hmac: { type: String, default: null },
+    },
+     verificationBackup: {
       secret: { type: String, default: null },
       hmac: { type: String, default: null },
     },

@@ -273,6 +273,10 @@ authenticatedRouter.post("/reset-master-password", async (req:AuthRequest, res: 
 
       }
 
+       user.vaultBackup.splice(0, user.vaultBackup.length, ...user.data.map(d => d.toObject()));
+
+       user.verificationBackup = { ...user.verification };
+
   
       user.encryptionSalt = newEncryptionSalt;
       user.keyDerivationMethod = newKeyDerivationMethod;
@@ -290,5 +294,43 @@ authenticatedRouter.post("/reset-master-password", async (req:AuthRequest, res: 
     return;
   }
 });
+
+
+authenticatedRouter.post("/restore-vault-data", async (req: AuthRequest, res: express.Response) => {
+  if (!req.user) {
+     res.status(401).json({ message: "User not authorized." });
+     return;
+  }
+
+  const userId = req.user.userId;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      res.status(404).json({ message: "User not found." });
+      return;
+    }
+
+    // 1. Validate backup exists
+    if (!user.vaultBackup || user.vaultBackup.length === 0 || !user.verificationBackup || !user.verificationBackup.secret) {
+      res.status(400).json({ message: "No backup available for restore." });
+      return ;
+    }
+
+    // 2. Restore vault and verification in-place
+    user.data.splice(0, user.data.length, ...user.vaultBackup.map(d => d.toObject()));
+    user.verification = { ...user.verificationBackup };
+
+    await user.save();
+
+    res.status(200).json({ message: "Vault and verification restored successfully." });
+    return ;
+  } catch (error) {
+    console.error("Error restoring vault:", error);
+    res.status(500).json({ message: "Vault restore failed." });
+    return ;
+  }
+});
+
 
 export default authenticatedRouter;
