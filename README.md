@@ -1,8 +1,4 @@
 🔐 Fortify – Your Secure Password Vault
-🚀 Live Demo:
-Deployed on AWS Lightsail at https://13.232.184.165
-
-Note: Uses a self-signed SSL certificate.
 
 You must proceed past the browser "Not Secure" warning to access the app.
 
