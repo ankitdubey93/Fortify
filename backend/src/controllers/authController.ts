@@ -6,7 +6,7 @@ import crypto from 'crypto';
 import { sendPasswordResetEmail, sendVerificationEmail } from '../utils/emailService';
 import { generateAccessToken, generateRefreshToken } from '../utils/jwt';
 import { RefreshToken } from '../models/RefreshToken';
-import redis from "../utils/redisClient";
+// import redis from "../utils/redisClient"; // REMOVED: Redis import is gone.
 
 
 
@@ -316,26 +316,14 @@ export const checkUser = async (req: Request, res: Response, next: NextFunction)
 
 
 export const resendVerificationEmail = async (req: Request, res: Response, next: NextFunction) => {
-  const RESEND_LIMIT = 3; // max attempts
-  const RESEND_WINDOW_SECONDS = 60 * 60;
   const { email } = req.body;
 
   if (!email) {
     res.status(400).json({ message: "Email is required." });
     return;
   }
-  const redisKey = `resend_verification:${email}`;
 
   try {
-    const count = await redis.get(redisKey);
-    if (count && parseInt(count) >= RESEND_LIMIT) {
-      res.status(429).json({
-        message:
-          "Too many verification email requests. Please try again later.",
-      });
-      return;
-    }
-
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -351,17 +339,15 @@ export const resendVerificationEmail = async (req: Request, res: Response, next:
       });
       return;
     }
+    
+   
+    
     const token = crypto.randomBytes(32).toString("hex");
     user.emailVerificationToken = token;
     user.emailVerificationTokenExpires = new Date(Date.now() + TOKEN_EXPIRY);
     await user.save();
     await sendVerificationEmail(user.email, token);
 
-    if (count) {
-      await redis.incr(redisKey);
-    } else {
-      await redis.set(redisKey, "1", "EX", RESEND_WINDOW_SECONDS);
-    }
     res.status(200).json({
       message: "Verification email sent on your email.",
     });
