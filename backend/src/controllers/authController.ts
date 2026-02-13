@@ -87,7 +87,7 @@ export const signIn = async (req: Request, res: Response, next: NextFunction) =>
             return;
         }
 
-        const isMatch = bcrypt.compare(password,validatedUser.password);
+        const isMatch = await bcrypt.compare(password,validatedUser.password);
         
         if(!isMatch) {
             res.status(401).json({message: "Invalid Password."});
